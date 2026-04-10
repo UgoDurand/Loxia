@@ -30,31 +30,36 @@
   - [x] Création de `CLAUDE.md` local (gitignored)
   - [x] Création de `docs/architecture.md` (squelette)
 
+- **Étape 2 — Initialisation git + repo GitHub privé + branches GitFlow** _(2026-04-10)_
+  - [x] Préflight : `git` 2.47, `gh` 2.89, `gh auth status` (logged as `UgoDurand`)
+  - [x] `git init -b main` + `git add .` + vérification que `CLAUDE.md` n'est PAS staged
+  - [x] Commit initial sur `main` : `chore: initial project structure and documentation` (`b5c2a98`, 22 fichiers / 919 insertions)
+  - [x] Création du repo GitHub **privé** `UgoDurand/Loxia` via `gh repo create`
+  - [x] `gh auth setup-git` pour le credential helper, puis `git push -u origin main`
+  - [x] Création de la branche `develop` depuis `main` et `git push -u origin develop`
+  - [x] `main` conservée comme branche par défaut du dépôt (ajustement GitFlow suite au retour utilisateur)
+  - [x] Correction doc sur `develop` : `docs: clarify main is the default branch in gitflow strategy` (`fab0cab`)
+  - [x] Vérifications finales : `CLAUDE.md` et `.env` absents du remote (404 confirmés), repo privé, 2 branches présentes
+
 ---
 
 ## 🚧 In progress
 
-- **Étape 2 — Initialisation git + repo GitHub privé + branches GitFlow** _(annoncée, en attente de go)_
-  - [ ] Préflight : `git --version`, `gh --version`, `gh auth status`
-  - [ ] `git init -b main` dans le dossier du projet
-  - [ ] `git add .` puis `git status` pour vérifier que `CLAUDE.md` n'est PAS staged
-  - [ ] Premier commit `chore: initial project structure and documentation` sur `main`
-  - [ ] Création du repo GitHub **privé** `Loxia` via `gh repo create --private --source=. --remote=origin --push`
-  - [ ] Création de la branche `develop` à partir de `main` et push avec tracking
-  - [ ] `main` conservée comme branche par défaut du dépôt (production), `develop` comme branche d'intégration
-  - [ ] Vérification finale (`gh repo view Loxia`, contrôle que `CLAUDE.md` n'est pas sur le remote)
+- **Étape 3 — Docker Compose minimal (PostgreSQL + Adminer)** _(annoncée, en attente de go)_
+  - [ ] Création de la branche `feat/infra-postgres-base` depuis `develop`
+  - [ ] Création de `scripts/init-multi-db.sh` (crée `auth_db`, `catalog_db`, `rental_db`, `notification_db` au démarrage du conteneur Postgres)
+  - [ ] Création de `docker-compose.yml` minimal : service `loxia-db` (image `postgres:16`) + service `adminer` (port 8090)
+  - [ ] Healthcheck Postgres (`pg_isready`)
+  - [ ] Test : `docker compose up -d`, vérification des 4 bases via Adminer
+  - [ ] `docker compose down` (sans `-v` pour garder le volume de test)
+  - [ ] Commit(s) atomiques sur `feat/infra-postgres-base` + push
+  - [ ] Après okay utilisateur : merge `--no-ff` dans `develop`, suppression de la branche, mise à jour de `TASKS.md`
 
 ---
 
 ## ⏳ Backlog
 
 ### 🏗 Phase d'amorçage (squelette technique)
-
-- [ ] **Étape 3** — Docker Compose minimal (PostgreSQL + Adminer)
-  - `scripts/init-multi-db.sh` (création des 4 bases dans Postgres)
-  - `docker-compose.yml` minimal : `loxia-db` + `adminer`
-  - Test de boot, vérification que les 4 bases sont créées
-  - Branche : `feat/infra-postgres-base`
 
 - [ ] **Étape 4** — Parent POM Maven + squelette `auth-service`
   - `services/pom.xml` (Java 21, Spring Boot 3.3.x, Lombok, dépendances communes)
@@ -171,7 +176,12 @@
 - **Pas de service discovery** (DNS Docker Compose suffit à cette échelle)
 - **Pas de Spring Cloud Config** : `application.yml` + profil `docker` + variables d'environnement `.env`
 
-### Conventions
+### Conventions d'avancement
+- **`TASKS.md` est mis à jour directement sur `develop`** par commits atomiques `docs(tasks): ...` après chaque étape validée (convention simple, pas de mini-branche dédiée).
+- Les branches `feat/*` et `fix/*` sont mergées dans `develop` via `git merge --no-ff` après validation utilisateur, puis supprimées localement et sur le remote.
+- À chaque jalon majeur (ex: fin de l'amorçage Docker, fin de l'auth, etc.) : merge `develop → main` + tag `vX.Y.Z`.
+
+### Conventions de code
 - Java : package `com.loxia.<service>`, DTO séparés des entités, Lombok autorisé, Slf4j pour les logs
 - React : composants fonctionnels uniquement, props typées, TanStack Query pour le fetch serveur, Zustand pour le state client global
 - SQL : `snake_case`, UUID PK, `created_at` / `updated_at`, migrations Flyway `V<n>__<desc>.sql`
