@@ -171,6 +171,7 @@ services:
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me-in-prod}
     networks:
       - loxia-net
     # The gateway is the ONLY service exposed on the host.

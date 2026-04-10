@@ -18,8 +18,7 @@ spring:
     gateway:
       # --------------- Routing ----------------------------------------
       # Each route forwards requests to the appropriate microservice.
-      # The path predicate is the only criterion used at this stage —
-      # a JWT GlobalFilter (step 10) will be added later.
+      # JWT validation is enforced by JwtAuthenticationFilter (GlobalFilter).
       # ----------------------------------------------------------------
       routes:
         # auth-service: registration, login, token refresh, user profile
@@ -61,6 +60,9 @@ spring:
               - DELETE
               - OPTIONS
             allowedHeaders: "*"
+
+jwt:
+  secret: ${JWT_SECRET:local-dev-secret-change-me-in-prod}
 
 server:
   port: 8080
