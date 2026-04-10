@@ -67,6 +67,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
       AUTH_DB_NAME: ${AUTH_DB_NAME:-auth_db}
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me-in-prod}
     networks:
       - loxia-net
     # Not exposed on the host: only the gateway will be published.
