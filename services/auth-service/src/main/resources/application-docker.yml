@@ -1,0 +1,13 @@
+# =====================================================================
+# Loxia — auth-service — Docker profile
+#
+# Activated by SPRING_PROFILES_ACTIVE=docker in docker-compose.yml.
+# Only overrides what differs from application.yml — here, the JDBC
+# URL, which uses the Docker DNS name `loxia-db` instead of localhost.
+# =====================================================================
+
+spring:
+  datasource:
+    url: jdbc:postgresql://loxia-db:5432/${AUTH_DB_NAME:auth_db}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:changeme}

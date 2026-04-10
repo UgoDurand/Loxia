@@ -7,6 +7,11 @@
 
 # Shell scripts — MUST be LF (executed by Linux containers)
 *.sh           text eol=lf
+mvnw           text eol=lf
+
+# Windows batch files — must keep CRLF
+*.cmd          text eol=crlf
+*.bat          text eol=crlf
 
 # Docker / YAML — LF to avoid subtle parse issues across platforms
 *.yml          text eol=lf
