@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  =====================================================================
+  Loxia — gateway
+
+  Spring Cloud Gateway acting as the single entry point for the whole
+  Loxia platform. Responsibilities:
+    - Route incoming requests to the right microservice
+    - CORS policy (open in dev)
+    - JWT validation + X-User-* header propagation (added in step 10)
+    - Deny /internal/** from the outside world (added in step 10)
+
+  This module does NOT inherit from services/pom.xml because it needs
+  the Spring Cloud Gateway dependency (WebFlux / Reactor Netty), which
+  is architecturally separate from the Spring Web / JPA / Flyway stack
+  used by the four business microservices. It inherits directly from
+  spring-boot-starter-parent and imports the Spring Cloud BOM.
+  =====================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.loxia</groupId>
+    <artifactId>gateway</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Loxia — Gateway</name>
+    <description>API Gateway — single entry point, routing, CORS, JWT filter (step 10).</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Spring Cloud 2023.0.x is the release train for Spring Boot 3.3.x -->
+        <spring-cloud.version>2023.0.3</spring-cloud.version>
+    </properties>
+
+    <!--
+      Import the Spring Cloud BOM to get aligned, curated versions for
+      all Spring Cloud starters (Gateway, LoadBalancer, etc.).
+    -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!--
+          Spring Cloud Gateway starter (Reactor Netty, no Tomcat).
+          Includes spring-webflux transitively.
+        -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
+
+        <!-- Actuator: /actuator/health used by the Docker HEALTHCHECK -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Lombok: boilerplate reduction (compile-time only) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Test scope -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>gateway</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

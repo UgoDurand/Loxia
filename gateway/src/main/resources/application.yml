@@ -1,0 +1,83 @@
+# =====================================================================
+# Loxia — gateway — default configuration
+#
+# Used when running the gateway OUTSIDE of Docker (e.g. from an IDE
+# against locally running services). Routes point to localhost with
+# the service ports defined in docker-compose.yml.
+#
+# When running inside Docker Compose, application-docker.yml is
+# activated via SPRING_PROFILES_ACTIVE=docker and overrides the route
+# URIs to use Docker DNS names instead of localhost.
+# =====================================================================
+
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      # --------------- Routing ----------------------------------------
+      # Each route forwards requests to the appropriate microservice.
+      # The path predicate is the only criterion used at this stage —
+      # a JWT GlobalFilter (step 10) will be added later.
+      # ----------------------------------------------------------------
+      routes:
+        # auth-service: registration, login, token refresh, user profile
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+
+        # catalog-service: real-estate listings CRUD + search
+        - id: catalog-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/listings/**
+
+        # rental-service: rental applications + lock rule
+        - id: rental-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/applications/**
+
+        # notification-service: in-app notifications
+        - id: notification-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/notifications/**
+
+      # --------------- CORS -------------------------------------------
+      # Open CORS policy for local development. Restricted to the front-
+      # end origin once the frontend is wired up (step 7).
+      # ----------------------------------------------------------------
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.loxia.gateway: DEBUG
+    org.springframework.cloud.gateway: DEBUG
