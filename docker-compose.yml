@@ -2,13 +2,19 @@
 # Loxia — Docker Compose (local development stack)
 #
 # Services currently wired up:
-#   - loxia-db     : single PostgreSQL 16 container, hosts 4 isolated DBs
-#   - pgadmin      : pgAdmin 4 web UI to inspect the databases during dev
-#   - auth-service : identity/auth microservice (Spring Boot 3.3, Java 21)
+#   - loxia-db             : single PostgreSQL 16 container, hosts 4 DBs
+#   - pgadmin              : pgAdmin 4 web UI to inspect the databases
+#   - auth-service         : identity / authentication microservice
+#   - catalog-service      : real-estate listings microservice
+#   - rental-service       : rental applications + lock rule microservice
+#   - notification-service : in-app notifications microservice
 #
-# The remaining microservices (catalog, rental, notification), the API
-# gateway and the frontend will be added in the next steps and will
-# all plug into the same `loxia-net` network.
+# All four business microservices run on the same `loxia-net` Docker
+# network and are NOT published on the host: only the gateway (added
+# in the next step) and pgAdmin will be reachable from localhost.
+#
+# The API gateway and the frontend will be added in the next steps
+# and will plug into the same network.
 #
 # Runtime values come from the `.env` file at the repository root
 # (copied from `.env.example`). Defaults are provided as a safety net
@@ -71,6 +77,81 @@ services:
     healthcheck:
       # `wget` ships with the alpine base image; no extra install needed.
       test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  catalog-service:
+    build:
+      context: ./services
+      dockerfile: catalog-service/Dockerfile
+    container_name: loxia-catalog-service
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      CATALOG_DB_NAME: ${CATALOG_DB_NAME:-catalog_db}
+    networks:
+      - loxia-net
+    expose:
+      - "8082"
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  rental-service:
+    build:
+      context: ./services
+      dockerfile: rental-service/Dockerfile
+    container_name: loxia-rental-service
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      RENTAL_DB_NAME: ${RENTAL_DB_NAME:-rental_db}
+    networks:
+      - loxia-net
+    expose:
+      - "8083"
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8083/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  notification-service:
+    build:
+      context: ./services
+      dockerfile: notification-service/Dockerfile
+    container_name: loxia-notification-service
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      NOTIFICATION_DB_NAME: ${NOTIFICATION_DB_NAME:-notification_db}
+    networks:
+      - loxia-net
+    expose:
+      - "8084"
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8084/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
