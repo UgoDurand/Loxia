@@ -131,15 +131,30 @@
 
 ---
 
+- **Étape 8 — Vérification E2E + release `v0.1.0`** _(2026-04-10)_
+  - [x] `docker compose down` + `docker compose up --build -d` → tous les builds depuis le cache, démarrage propre en ordre
+  - [x] 8 conteneurs `(healthy)` : `loxia-db`, `auth-service`, `catalog-service`, `rental-service`, `notification-service`, `gateway`, `frontend`, `pgadmin`
+  - [x] `curl http://localhost:8080/actuator/health` → `{"status":"UP",...}` (gateway)
+  - [x] `curl http://localhost:3000/health` → `ok` (frontend Nginx)
+  - [x] 4× `/actuator/health` via `docker compose exec` → `UP` pour chaque microservice
+  - [x] SPA fallback : `GET /route-inexistante` → HTTP 200 (Nginx sert `index.html`)
+  - [x] 4 bases PostgreSQL présentes (`auth_db`, `catalog_db`, `rental_db`, `notification_db`)
+  - [x] 4× `flyway_schema_history` présente dans chaque base
+  - [x] Merge `develop → main` (`--no-ff`) + tag `v0.1.0` + push remote
+
+---
+
 ## 🚧 In progress
 
-_(rien en cours — prochaine étape = Étape 8 vérification E2E + release v0.1.0)_
+_(rien en cours — phase d'amorçage terminée, prochaine phase = Authentification)_
 
 ---
 
 ## ⏳ Backlog
 
 ### 🏗 Phase d'amorçage (squelette technique)
+
+_(Phase terminée — voir section Done ci-dessus)_
 
 - [ ] **Étape 8** — Vérification end-to-end Docker Compose
   - `docker compose up --build` → tous les services démarrent en `healthy`
