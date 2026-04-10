@@ -1,0 +1,89 @@
+# =====================================================================
+# Loxia — .gitignore
+# =====================================================================
+
+# ---------- Local assistant context (NEVER commit) ----------
+CLAUDE.md
+.claude/
+.cursor/
+.aider*
+.github-copilot/
+
+# ---------- Secrets & local environment ----------
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ---------- Java / Maven ----------
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+.mvn/wrapper/maven-wrapper.jar
+
+# ---------- Spring Boot ----------
+**/spring.log
+HELP.md
+
+# ---------- Node / npm / pnpm / yarn ----------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.yarn/cache
+.yarn/install-state.gz
+
+# ---------- Frontend build artifacts ----------
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/coverage/
+frontend/.turbo/
+
+# ---------- IDE & editors ----------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+!.vscode/settings.json.example
+.project
+.classpath
+.settings/
+*.swp
+*.swo
+*~
+.netbeans/
+nbproject/private/
+
+# ---------- OS files ----------
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ---------- Logs ----------
+*.log
+logs/
+
+# ---------- Docker local overrides ----------
+docker-compose.override.yml
+
+# ---------- Misc ----------
+*.tmp
+*.bak
+*.orig
+.cache/

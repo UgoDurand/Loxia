@@ -1,0 +1,59 @@
+# =====================================================================
+# Loxia — .dockerignore
+# Files excluded from Docker build context to keep images small
+# and prevent leaking secrets/local artifacts.
+# =====================================================================
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Local assistant context
+CLAUDE.md
+.claude/
+.cursor/
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+
+# Java / Maven build outputs
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+hs_err_pid*
+
+# Node build outputs
+node_modules/
+dist/
+build/
+.vite/
+coverage/
+
+# Documentation (not needed inside containers)
+docs/
+*.md
+!README.md
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs / tmp
+*.log
+*.tmp
+*.bak
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+.dockerignore
