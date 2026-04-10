@@ -1,11 +1,12 @@
 # =====================================================================
 # Loxia — Docker Compose (local development stack)
 #
-# At this stage only the database layer is wired up:
-#   - loxia-db  : single PostgreSQL 16 container, hosts 4 isolated DBs
-#   - pgadmin   : pgAdmin 4 web UI to inspect the databases during dev
+# Services currently wired up:
+#   - loxia-db     : single PostgreSQL 16 container, hosts 4 isolated DBs
+#   - pgadmin      : pgAdmin 4 web UI to inspect the databases during dev
+#   - auth-service : identity/auth microservice (Spring Boot 3.3, Java 21)
 #
-# The microservices (auth, catalog, rental, notification), the API
+# The remaining microservices (catalog, rental, notification), the API
 # gateway and the frontend will be added in the next steps and will
 # all plug into the same `loxia-net` network.
 #
@@ -43,6 +44,37 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  auth-service:
+    build:
+      # Build context is the whole services/ directory so that the
+      # Dockerfile can read both the parent POM and the module POM.
+      context: ./services
+      dockerfile: auth-service/Dockerfile
+    container_name: loxia-auth-service
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      AUTH_DB_NAME: ${AUTH_DB_NAME:-auth_db}
+    networks:
+      - loxia-net
+    # Not exposed on the host: only the gateway will be published.
+    # Other services reach auth-service through the Docker DNS name
+    # `auth-service` on port 8081.
+    expose:
+      - "8081"
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+    healthcheck:
+      # `wget` ships with the alpine base image; no extra install needed.
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
 
   pgadmin:
     image: dpage/pgadmin4:8
