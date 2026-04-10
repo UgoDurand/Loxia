@@ -1,0 +1,3 @@
+# Flyway migrations directory. First real migration (V1__init.sql with
+# the applications table) will be added when the full rental feature
+# is implemented.

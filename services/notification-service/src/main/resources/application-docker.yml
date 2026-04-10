@@ -1,0 +1,13 @@
+# =====================================================================
+# Loxia — notification-service — Docker profile
+#
+# Activated by SPRING_PROFILES_ACTIVE=docker in docker-compose.yml.
+# Only overrides the JDBC URL so the service reaches the database
+# through the Docker DNS name `loxia-db`.
+# =====================================================================
+
+spring:
+  datasource:
+    url: jdbc:postgresql://loxia-db:5432/${NOTIFICATION_DB_NAME:notification_db}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:changeme}

@@ -184,26 +184,62 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 
 ## Démarrage rapide
 
-> ⚠️ Cette section sera complétée au fur et à mesure de l'avancement du projet. Pour l'instant, le squelette d'infrastructure n'est pas encore en place — voir [`TASKS.md`](TASKS.md) pour l'état actuel.
+> ℹ️ **État actuel** : l'infrastructure Docker + les 4 microservices métier (`auth`, `catalog`, `rental`, `notification`) sont en place sous forme de squelettes Spring Boot qui démarrent `healthy` et se connectent à leur base Postgres respective. La **gateway** et le **frontend** seront ajoutés aux étapes suivantes. Voir [`TASKS.md`](TASKS.md) pour le détail.
 
-À terme :
+### 1. Cloner et préparer
 
 ```bash
-# 1. Cloner le dépôt
-git clone git@github.com:<owner>/Loxia.git
+git clone git@github.com:UgoDurand/Loxia.git
 cd Loxia
+git switch develop            # branche d'intégration
+cp .env.example .env          # adapter les secrets si besoin
+```
 
-# 2. Préparer l'environnement
-cp .env.example .env
-# (éditer .env si besoin, en particulier JWT_SECRET)
+### 2. Démarrer la stack
 
-# 3. Démarrer l'ensemble de la stack
-docker compose up --build
+```bash
+docker compose up -d          # lance db + 4 services + pgAdmin
+docker compose ps             # tous doivent passer (healthy) en <2 min
+docker compose logs -f        # suivre les logs en direct (optionnel)
+```
 
-# 4. Ouvrir l'application
+Au premier build, Docker doit télécharger les dépendances Maven des 4 services : compter **5 à 10 minutes**. Les builds suivants sont beaucoup plus rapides grâce au cache Docker layer.
+
+### 3. Vérifier que tout est up
+
+```bash
+# Santé de chaque microservice (depuis l'intérieur du réseau Docker)
+docker compose exec auth-service         wget -qO- http://localhost:8081/actuator/health
+docker compose exec catalog-service      wget -qO- http://localhost:8082/actuator/health
+docker compose exec rental-service       wget -qO- http://localhost:8083/actuator/health
+docker compose exec notification-service wget -qO- http://localhost:8084/actuator/health
+# → chacun doit répondre {"status":"UP","groups":["liveness","readiness"]}
+```
+
+> 🔒 **Les microservices ne sont pas exposés sur l'hôte** (règle d'isolation réseau : seule la gateway le sera une fois ajoutée). Ne cherche pas à les atteindre depuis `http://localhost:8081` — ça ne fonctionnera jamais, c'est voulu. Utilise `docker compose exec` comme ci-dessus tant que la gateway n'est pas en place.
+
+### 4. pgAdmin (inspection des bases)
+
+Seul service web exposé sur l'hôte actuellement.
+
+- URL : **http://localhost:8090**
+- Login : valeur de `PGADMIN_DEFAULT_EMAIL` dans ton `.env` (défaut `admin@loxia.dev`)
+- Password : valeur de `PGADMIN_DEFAULT_PASSWORD` dans ton `.env` (défaut `admin`)
+- Le serveur **Loxia DB** est pré-enregistré dans l'Object Explorer. Mot de passe Postgres au premier clic : valeur de `POSTGRES_PASSWORD` dans ton `.env` (défaut `changeme`)
+- 4 bases visibles : `auth_db`, `catalog_db`, `rental_db`, `notification_db` — chacune contient déjà sa table `flyway_schema_history` créée automatiquement au démarrage du service correspondant
+
+### 5. Arrêter
+
+```bash
+docker compose down           # stoppe les conteneurs, garde les volumes (données préservées)
+docker compose down -v        # stoppe ET efface les volumes (DB wipée — à utiliser avec précaution)
+```
+
+### 6. Plus tard (une fois la gateway et le frontend en place)
+
+```bash
 # Frontend : http://localhost:3000
 # Gateway  : http://localhost:8080
-# pgAdmin  : http://localhost:8090
 ```
 
 ---

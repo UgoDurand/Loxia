@@ -41,12 +41,16 @@
     <description>Shared Maven parent POM for all Loxia backend microservices.</description>
 
     <!--
-      Child modules. New services are added here as the project grows.
-      For now only auth-service exists; catalog/rental/notification
-      will be appended in the next step.
+      Child modules. Each microservice lives in its own Maven module
+      under services/. They all inherit from this parent POM to keep
+      Java version, Spring Boot version and shared plugin config in
+      sync across the whole backend.
     -->
     <modules>
         <module>auth-service</module>
+        <module>catalog-service</module>
+        <module>rental-service</module>
+        <module>notification-service</module>
     </modules>
 
     <properties>
