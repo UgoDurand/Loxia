@@ -17,16 +17,22 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /build
 
-# Copy the parent POM first so Maven can resolve it.
+# Copy the parent POM and every child module POM. The parent POM
+# declares all 4 services under <modules>, so Maven refuses to read
+# it unless every module's pom.xml is present on disk — even when
+# we only want to build one of them. Copying just the POMs keeps
+# this layer cacheable: as long as no pom.xml changes, Docker reuses
+# the warmed-up dependency cache below.
 COPY pom.xml ./pom.xml
-
-# Copy the module's POM next. This layer is cached unless the POM
-# changes, which is the classic Maven Docker optimization for
-# dependency download.
 COPY auth-service/pom.xml ./auth-service/pom.xml
+COPY catalog-service/pom.xml ./catalog-service/pom.xml
+COPY rental-service/pom.xml ./rental-service/pom.xml
+COPY notification-service/pom.xml ./notification-service/pom.xml
 
-# Warm up the local Maven repository with all dependencies. This step
-# is cached as long as the POMs above don't change.
+# Warm up the local Maven repository with auth-service's dependencies.
+# `-pl auth-service -am` restricts the build to that module and its
+# (non-existent) upstream siblings, so only auth-service's deps are
+# actually downloaded.
 RUN mvn -q -pl auth-service -am dependency:go-offline
 
 # Now copy the actual sources and build the JAR. Tests are skipped
