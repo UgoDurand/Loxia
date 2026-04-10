@@ -41,7 +41,7 @@
   - [ ] Premier commit `chore: initial project structure and documentation` sur `main`
   - [ ] Création du repo GitHub **privé** `Loxia` via `gh repo create --private --source=. --remote=origin --push`
   - [ ] Création de la branche `develop` à partir de `main` et push avec tracking
-  - [ ] Configuration de `develop` comme branche par défaut côté GitHub (`gh repo edit --default-branch develop`)
+  - [ ] `main` conservée comme branche par défaut du dépôt (production), `develop` comme branche d'intégration
   - [ ] Vérification finale (`gh repo view Loxia`, contrôle que `CLAUDE.md` n'est pas sur le remote)
 
 ---

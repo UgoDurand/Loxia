@@ -243,8 +243,8 @@ Loxia suit un **GitFlow simplifié** à deux branches longues + branches de feat
 
 | Branche                       | Rôle                                                          | Règles                                                                                            |
 | ----------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `main`                        | **Production** — toujours stable, déployable                  | Pas de commit direct. Reçoit uniquement des merges depuis `develop` aux jalons (release).         |
-| `develop`                     | **Intégration** — état courant de l'équipe                    | **Branche par défaut.** Reçoit les merges des branches de feature après validation.                |
+| `main`                        | **Production** — toujours stable, déployable                  | **Branche par défaut du dépôt.** Pas de commit direct. Reçoit uniquement des merges depuis `develop` aux jalons (release). |
+| `develop`                     | **Intégration** — état courant de l'équipe                    | Reçoit les merges des branches de feature après validation. Base des nouvelles branches `feat/*`.   |
 | `feat/<scope>-<short-desc>`   | Développement d'une fonctionnalité                            | Branchée depuis `develop`. Mergée dans `develop` après tests OK. Supprimée après merge.            |
 | `fix/<scope>-<short-desc>`    | Correction d'un bug                                           | Mêmes règles qu'une `feat/`.                                                                       |
 
