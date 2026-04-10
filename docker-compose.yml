@@ -8,11 +8,13 @@
 #   - catalog-service      : real-estate listings microservice
 #   - rental-service       : rental applications + lock rule microservice
 #   - notification-service : in-app notifications microservice
-#   - gateway              : Spring Cloud Gateway — single host-exposed entry point
+#   - gateway              : Spring Cloud Gateway — single API entry point
+#   - frontend             : React + Vite build served by Nginx
 #
-# The gateway is the ONLY service published on the host (port 8080).
-# All four business microservices remain on the internal Docker network.
-# The frontend will be added in the next step (feat/frontend-skeleton).
+# Exposed ports on the host:
+#   - 8080 : gateway  (API)
+#   - 3000 : frontend (UI)
+#   - 8090 : pgAdmin  (dev only)
 #
 # The API gateway and the frontend will be added in the next steps
 # and will plug into the same network.
@@ -189,6 +191,27 @@ services:
       timeout: 5s
       retries: 10
       start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: loxia-frontend
+    restart: unless-stopped
+    networks:
+      - loxia-net
+    # Exposed on port 3000 on the host (Nginx listens on 80 inside).
+    ports:
+      - "3000:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health | grep -q 'ok' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   pgadmin:
     image: dpage/pgadmin4:8
