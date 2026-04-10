@@ -41,6 +41,24 @@
   - [x] Correction doc sur `develop` : `docs: clarify main is the default branch in gitflow strategy` (`fab0cab`)
   - [x] Vérifications finales : `CLAUDE.md` et `.env` absents du remote (404 confirmés), repo privé, 2 branches présentes
 
+- **Étape 4 — Parent POM Maven + squelette `auth-service`** _(2026-04-10)_
+  - [x] Branche `feat/services-parent-pom-and-auth-skeleton` créée depuis `develop`
+  - [x] Parent POM `services/pom.xml` (packaging `pom`, hérite de `spring-boot-starter-parent` 3.3.5, Java 21 LTS, `pluginManagement` pour le plugin Spring Boot avec exclusion Lombok, `dependencyManagement` pour pinner springdoc-openapi 2.6.0)
+  - [x] **Maven Wrapper unique à la racine `services/`** (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/maven-wrapper.properties` → Maven 3.9.9) — choix multi-module : un seul wrapper partagé par tous les services au lieu d'un par module
+  - [x] Squelette `services/auth-service/` : `pom.xml` (hérite du parent, `finalName: auth-service`), `AuthApplication.java` minimaliste dans `com.loxia.auth`, `application.yml` (port 8081, profil par défaut localhost) + `application-docker.yml` (override JDBC vers `loxia-db`), dossier `db/migration/` prêt pour Flyway (avec `.gitkeep`)
+  - [x] Dépendances auth-service : `spring-boot-starter-web`, `spring-boot-starter-actuator`, `spring-boot-starter-data-jpa`, `postgresql` (runtime), `flyway-core` + `flyway-database-postgresql`, `lombok` (optional), `spring-boot-starter-test`
+  - [x] `/actuator/health` exposé (seul endpoint activé via `management.endpoints.web.exposure.include=health`)
+  - [x] `Dockerfile` multi-stage : stage 1 `maven:3.9-eclipse-temurin-21` (copie pom parent + pom module → `mvn dependency:go-offline` → copie sources → `mvn package -DskipTests`), stage 2 `eclipse-temurin:21-jre-alpine` (user non-root `loxia`, `EXPOSE 8081`, `ENTRYPOINT java -jar`)
+  - [x] `build context: ./services` + `dockerfile: auth-service/Dockerfile` pour permettre au Dockerfile de lire à la fois le parent POM et le module POM
+  - [x] Intégration `docker-compose.yml` : service `auth-service` **non exposé sur l'hôte** (`expose: 8081`), `SPRING_PROFILES_ACTIVE=docker`, `depends_on: loxia-db service_healthy`, healthcheck `wget http://localhost:8081/actuator/health` (interval 10s, retries 10, start_period 60s)
+  - [x] `.gitattributes` étoffé : `mvnw` forcé en LF (exécuté par Linux), `*.cmd`/`*.bat` forcés en CRLF (exécutés par Windows)
+  - [x] Build Docker testé : `docker compose build auth-service` → OK (143s dep download + 9s package), image `loxia-auth-service:latest` produite
+  - [x] Boot testé : `docker compose up -d auth-service` → conteneur `healthy` en ~50s, logs Spring Boot propres (Java 21.0.10, Spring Boot 3.3.5, profil docker actif, Hikari connecté à `jdbc:postgresql://loxia-db:5432/auth_db`, Flyway a créé `flyway_schema_history` avec warning "No migrations found" attendu)
+  - [x] `/actuator/health` retourne `{"status":"UP","groups":["liveness","readiness"]}` via `docker compose exec`
+  - [x] Vérification visuelle utilisateur OK : table `flyway_schema_history` visible dans pgAdmin sous `auth_db.public` avec ses 10 colonnes
+  - [x] 3 commits atomiques sur `feat/services-parent-pom-and-auth-skeleton` : `feat(services): ...` (`a1610a3`) + `feat(auth): ...` (`e334ba8`) + `feat(infra): ...` (`b70ef0f`)
+  - [x] Merge `--no-ff` dans `develop` (`b7c07e9`), branche feature à supprimer (local + remote)
+
 - **Étape 3 — Docker Compose minimal (PostgreSQL + pgAdmin)** _(2026-04-10)_
   - [x] Branche `feat/infra-postgres-base` créée depuis `develop`
   - [x] `.gitattributes` : LF forcé pour `.sh`, `.yml`, `Dockerfile` (évite les soucis CRLF sous Windows)
@@ -59,17 +77,7 @@
 
 ## 🚧 In progress
 
-- **Étape 4 — Parent POM Maven + squelette `auth-service`** _(annoncée, en attente de go)_
-  - [ ] Création de la branche `feat/services-parent-pom-and-auth-skeleton` depuis `develop`
-  - [ ] Parent POM `services/pom.xml` (Java 21, Spring Boot 3.3.x, versions des dépendances communes, Lombok)
-  - [ ] Squelette `services/auth-service/` : `pom.xml` (hérite du parent), `AuthApplication.java` (package `com.loxia.auth`), `application.yml` (port 8081) + `application-docker.yml` (profil docker, URL JDBC interne), Maven Wrapper (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/`)
-  - [ ] Dépendances minimales : `spring-boot-starter-web`, `spring-boot-starter-actuator` (healthcheck), `spring-boot-starter-data-jpa`, driver PostgreSQL, Flyway (pour préparer l'étape 9)
-  - [ ] Premier endpoint : `/actuator/health` exposé
-  - [ ] `Dockerfile` multi-stage (stage 1 : `maven:3.9-eclipse-temurin-21` → build JAR ; stage 2 : `eclipse-temurin:21-jre-alpine` → runtime slim)
-  - [ ] Intégration au `docker-compose.yml` : service `auth-service`, non exposé sur l'hôte, `depends_on: loxia-db service_healthy`, `SPRING_PROFILES_ACTIVE=docker`, healthcheck Docker sur `/actuator/health`
-  - [ ] Test : `docker compose up -d --build auth-service` → passe `healthy`, log de démarrage Spring Boot propre, connexion JDBC réussie
-  - [ ] 1 ou 2 commits atomiques + push
-  - [ ] Après okay utilisateur : merge `--no-ff` dans `develop`, suppression de la branche, mise à jour de `TASKS.md`
+_(rien en cours — prochaine étape à annoncer sur demande)_
 
 ---
 
