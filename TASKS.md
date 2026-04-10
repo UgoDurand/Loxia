@@ -41,25 +41,6 @@
   - [x] Correction doc sur `develop` : `docs: clarify main is the default branch in gitflow strategy` (`fab0cab`)
   - [x] Vérifications finales : `CLAUDE.md` et `.env` absents du remote (404 confirmés), repo privé, 2 branches présentes
 
-- **Étape 5 — Squelettes `catalog-service`, `rental-service`, `notification-service`** _(2026-04-10)_
-  - [x] Branche `feat/services-skeletons-catalog-rental-notification` créée depuis `develop`
-  - [x] Parent POM `services/pom.xml` : 3 nouveaux modules déclarés (`catalog-service`, `rental-service`, `notification-service`) → le parent contient maintenant les 4 microservices
-  - [x] Squelettes créés sur le même pattern qu'`auth-service` (pom.xml qui hérite du parent, classe main `@SpringBootApplication`, `application.yml` + `application-docker.yml`, dossier Flyway `db/migration/.gitkeep`, Dockerfile multi-stage)
-  - [x] `catalog-service` : port 8082, base `catalog_db`, package `com.loxia.catalog`, class `CatalogApplication`
-  - [x] `rental-service` : port 8083, base `rental_db`, package `com.loxia.rental`, class `RentalApplication`
-  - [x] `notification-service` : port 8084, base `notification_db`, package `com.loxia.notification`, class `NotificationApplication`
-  - [x] Fix critique sur les 4 Dockerfiles : le parent POM déclarant 4 modules, chaque Dockerfile doit copier **les 4 POMs enfants** (pas juste le sien) avant `dependency:go-offline`, sinon Maven refuse de lire le parent. Auth-service Dockerfile mis à jour en conséquence.
-  - [x] Intégration `docker-compose.yml` : 3 nouveaux services, tous non exposés (`expose:` uniquement), `depends_on: loxia-db healthy`, healthcheck wget sur `/actuator/health`, variables d'env `SPRING_PROFILES_ACTIVE=docker` + credentials DB
-  - [x] Build parallèle testé : `docker compose build --parallel auth-service catalog-service rental-service notification-service` → 4 images produites
-  - [x] Stack complète testée : `docker compose up -d` → 6 conteneurs (db + pgAdmin + 4 services) **tous `(healthy)` en ~90s**
-  - [x] 4× `/actuator/health` → `{"status":"UP","groups":["liveness","readiness"]}`
-  - [x] 4× Flyway : chaque base a bien sa table `flyway_schema_history`
-  - [x] Logs Spring Boot propres pour les 3 nouveaux services (Started in ~12s, profil docker actif, HikariPool connecté à la bonne base)
-  - [x] Vérification visuelle utilisateur OK dans pgAdmin : 4 bases visibles avec chacune sa `flyway_schema_history`
-  - [x] Docs `README.md` (section Démarrage rapide réécrite pour refléter l'état actuel) et `docs/architecture.md` (table de topologie avec colonne "Statut actuel") mises à jour sur la feature branch
-  - [x] 6 commits atomiques sur `feat/services-skeletons-catalog-rental-notification` : `feat(services)` (`9a12e5a`) + `feat(catalog)` (`d41abd3`) + `feat(rental)` (`39b0548`) + `feat(notification)` (`09df8c4`) + `feat(infra)` (`3da7799`) + `docs(infra)` (`6c08cde`)
-  - [x] Merge `--no-ff` dans `develop`, branche feature à supprimer (local + remote)
-
 - **Étape 4 — Parent POM Maven + squelette `auth-service`** _(2026-04-10)_
   - [x] Branche `feat/services-parent-pom-and-auth-skeleton` créée depuis `develop`
   - [x] Parent POM `services/pom.xml` (packaging `pom`, hérite de `spring-boot-starter-parent` 3.3.5, Java 21 LTS, `pluginManagement` pour le plugin Spring Boot avec exclusion Lombok, `dependencyManagement` pour pinner springdoc-openapi 2.6.0)
@@ -92,6 +73,25 @@
   - [x] 2 commits atomiques sur `feat/infra-postgres-base` : `feat(infra): ...` (`831200a`) + `docs(infra): ...` (`2f5b869`)
   - [x] Merge `--no-ff` dans `develop` (`46eb471`), branche feature supprimée en local et sur le remote
 
+- **Étape 5 — Squelettes `catalog-service`, `rental-service`, `notification-service`** _(2026-04-10)_
+  - [x] Branche `feat/services-skeletons-catalog-rental-notification` créée depuis `develop`
+  - [x] Parent POM `services/pom.xml` : 3 nouveaux modules déclarés (`catalog-service`, `rental-service`, `notification-service`) → le parent contient maintenant les 4 microservices
+  - [x] Squelettes créés sur le même pattern qu'`auth-service` (pom.xml qui hérite du parent, classe main `@SpringBootApplication`, `application.yml` + `application-docker.yml`, dossier Flyway `db/migration/.gitkeep`, Dockerfile multi-stage)
+  - [x] `catalog-service` : port 8082, base `catalog_db`, package `com.loxia.catalog`, class `CatalogApplication`
+  - [x] `rental-service` : port 8083, base `rental_db`, package `com.loxia.rental`, class `RentalApplication`
+  - [x] `notification-service` : port 8084, base `notification_db`, package `com.loxia.notification`, class `NotificationApplication`
+  - [x] Fix critique sur les 4 Dockerfiles : le parent POM déclarant 4 modules, chaque Dockerfile doit copier **les 4 POMs enfants** (pas juste le sien) avant `dependency:go-offline`, sinon Maven refuse de lire le parent. Auth-service Dockerfile mis à jour en conséquence.
+  - [x] Intégration `docker-compose.yml` : 3 nouveaux services, tous non exposés (`expose:` uniquement), `depends_on: loxia-db healthy`, healthcheck wget sur `/actuator/health`, variables d'env `SPRING_PROFILES_ACTIVE=docker` + credentials DB
+  - [x] Build parallèle testé : `docker compose build --parallel auth-service catalog-service rental-service notification-service` → 4 images produites
+  - [x] Stack complète testée : `docker compose up -d` → 6 conteneurs (db + pgAdmin + 4 services) **tous `(healthy)` en ~90s**
+  - [x] 4× `/actuator/health` → `{"status":"UP","groups":["liveness","readiness"]}`
+  - [x] 4× Flyway : chaque base a bien sa table `flyway_schema_history`
+  - [x] Logs Spring Boot propres pour les 3 nouveaux services (Started in ~12s, profil docker actif, HikariPool connecté à la bonne base)
+  - [x] Vérification visuelle utilisateur OK dans pgAdmin : 4 bases visibles avec chacune sa `flyway_schema_history`
+  - [x] Docs `README.md` (section Démarrage rapide réécrite pour refléter l'état actuel) et `docs/architecture.md` (table de topologie avec colonne "Statut actuel") mises à jour sur la feature branch
+  - [x] 6 commits atomiques sur `feat/services-skeletons-catalog-rental-notification` : `feat(services)` (`9a12e5a`) + `feat(catalog)` (`d41abd3`) + `feat(rental)` (`39b0548`) + `feat(notification)` (`09df8c4`) + `feat(infra)` (`3da7799`) + `docs(infra)` (`6c08cde`)
+  - [x] Merge `--no-ff` dans `develop` (`5387ade`), branche feature supprimée en local et sur le remote
+
 ---
 
 ## 🚧 In progress
@@ -103,11 +103,6 @@ _(rien en cours — projet repris par un coéquipier, prochaine étape = Étape 
 ## ⏳ Backlog
 
 ### 🏗 Phase d'amorçage (squelette technique)
-
-- [ ] **Étape 5** — Squelettes `catalog-service`, `rental-service`, `notification-service`
-  - Même pattern que `auth-service` (boot vide + healthcheck + Dockerfile)
-  - Intégration au compose
-  - Branche : `feat/services-skeletons-catalog-rental-notification`
 
 - [ ] **Étape 6** — Squelette `gateway` Spring Cloud Gateway
   - Routes vers les 4 services (vides pour l'instant)
