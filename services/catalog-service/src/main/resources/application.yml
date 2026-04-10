@@ -1,0 +1,51 @@
+# =====================================================================
+# Loxia — catalog-service — default configuration
+#
+# Defaults used when running the service OUTSIDE of Docker. The
+# `docker` profile (application-docker.yml) overrides the JDBC URL
+# to use the loxia-db Docker DNS name.
+# =====================================================================
+
+spring:
+  application:
+    name: catalog-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/catalog_db
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:changeme}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.loxia.catalog: DEBUG
