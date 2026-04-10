@@ -142,7 +142,7 @@ Création des bases via `scripts/init-multi-db.sh` exécuté au démarrage du co
 | `catalog-service`       | build local (Java 21)      | —         | ✅ en place (squelette) | Réseau interne uniquement — port 8082 |
 | `rental-service`        | build local (Java 21)      | —         | ✅ en place (squelette) | Réseau interne uniquement — port 8083 |
 | `notification-service`  | build local (Java 21)      | —         | ✅ en place (squelette) | Réseau interne uniquement — port 8084 |
-| `gateway`               | build local                | **8080**  | ⏳ à venir     | Seul service métier exposé sur l'hôte |
+| `gateway`               | build local (Java 21)      | **8080**  | ✅ en place (squelette) | Seul service exposé sur l'hôte — port 8080 |
 | `frontend`              | build local (multi-stage)  | **3000**  | ⏳ à venir     | Nginx servant le build React     |
 
 > **Statut « squelette »** = le service démarre, se connecte à sa base et expose `/actuator/health`. Aucun endpoint métier ni aucune entité JPA n'existent encore. La logique métier sera ajoutée aux étapes suivantes (auth complet, catalog complet, rental complet, notification complet).

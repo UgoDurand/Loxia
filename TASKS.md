@@ -92,23 +92,32 @@
   - [x] 6 commits atomiques sur `feat/services-skeletons-catalog-rental-notification` : `feat(services)` (`9a12e5a`) + `feat(catalog)` (`d41abd3`) + `feat(rental)` (`39b0548`) + `feat(notification)` (`09df8c4`) + `feat(infra)` (`3da7799`) + `docs(infra)` (`6c08cde`)
   - [x] Merge `--no-ff` dans `develop` (`5387ade`), branche feature supprimée en local et sur le remote
 
+- **Étape 6 — Squelette `gateway` Spring Cloud Gateway** _(2026-04-10)_
+  - [x] Branche `feat/gateway-skeleton` créée depuis `develop`
+  - [x] `gateway/pom.xml` standalone (hérite de `spring-boot-starter-parent` 3.3.5, importe Spring Cloud BOM 2023.0.3), pas intégré dans `services/pom.xml` (dépendances WebFlux distinctes des services JPA)
+  - [x] `GatewayApplication.java` dans `com.loxia.gateway`
+  - [x] `application.yml` (port 8080, 4 routes localhost, CORS dev ouvert) + `application-docker.yml` (override URIs vers DNS Docker)
+  - [x] Routes : `/api/auth/**` → `auth-service:8081`, `/api/listings/**` → `catalog-service:8082`, `/api/applications/**` → `rental-service:8083`, `/api/notifications/**` → `notification-service:8084`
+  - [x] `Dockerfile` multi-stage (Maven 3.9 + Temurin 21 JRE Alpine, user non-root `loxia`, `EXPOSE 8080`)
+  - [x] Intégration `docker-compose.yml` : seul service avec `ports: 8080:8080`, `depends_on` les 4 microservices `service_healthy`, healthcheck `/actuator/health`
+  - [x] Build testé : `docker compose build gateway` → image `loxia-gateway` produite (Spring Cloud deps ~75s, package ~8s)
+  - [x] Boot testé : `docker compose up -d gateway` → `loxia-gateway` passe `(healthy)`, Java 21.0.10, Spring Boot 3.3.5, profil docker actif, démarrage en ~2s
+  - [x] `curl http://localhost:8080/actuator/health` → `{"status":"UP","groups":["liveness","readiness"]}`
+  - [x] Logs gateway : `New routes count: 4` — 4 routes chargées
+  - [x] 2 commits atomiques sur `feat/gateway-skeleton` : `feat(gateway): ...` (`3860c9b`) + `feat(infra): ...` (`b812f93`)
+  - [x] Merge `--no-ff` dans `develop` (`31e7ef6`), branche feature supprimée en local et sur le remote
+
 ---
 
 ## 🚧 In progress
 
-_(rien en cours — projet repris par un coéquipier, prochaine étape = Étape 6 gateway)_
+_(rien en cours — prochaine étape = Étape 7 frontend React)_
 
 ---
 
 ## ⏳ Backlog
 
 ### 🏗 Phase d'amorçage (squelette technique)
-
-- [ ] **Étape 6** — Squelette `gateway` Spring Cloud Gateway
-  - Routes vers les 4 services (vides pour l'instant)
-  - CORS dev (ouvert)
-  - Pas encore de filtre JWT
-  - Branche : `feat/gateway-skeleton`
 
 - [ ] **Étape 7** — Squelette frontend React
   - `npm create vite@latest frontend -- --template react-ts`
