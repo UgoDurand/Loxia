@@ -164,7 +164,7 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 | API Gateway    | **Spring Cloud Gateway**                                               |
 | Conteneurs     | **Docker** + **Docker Compose v2**                                     |
 | Reverse proxy  | **Nginx** (sert le build React statique)                               |
-| Outil d'admin  | **Adminer** (service Docker dev uniquement, port 8090)                 |
+| Outil d'admin  | **pgAdmin 4** (service Docker dev uniquement, port 8090)               |
 
 ---
 
@@ -203,7 +203,7 @@ docker compose up --build
 # 4. Ouvrir l'application
 # Frontend : http://localhost:3000
 # Gateway  : http://localhost:8080
-# Adminer  : http://localhost:8090
+# pgAdmin  : http://localhost:8090
 ```
 
 ---
