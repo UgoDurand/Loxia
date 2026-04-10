@@ -8,10 +8,11 @@
 #   - catalog-service      : real-estate listings microservice
 #   - rental-service       : rental applications + lock rule microservice
 #   - notification-service : in-app notifications microservice
+#   - gateway              : Spring Cloud Gateway — single host-exposed entry point
 #
-# All four business microservices run on the same `loxia-net` Docker
-# network and are NOT published on the host: only the gateway (added
-# in the next step) and pgAdmin will be reachable from localhost.
+# The gateway is the ONLY service published on the host (port 8080).
+# All four business microservices remain on the internal Docker network.
+# The frontend will be added in the next step (feat/frontend-skeleton).
 #
 # The API gateway and the frontend will be added in the next steps
 # and will plug into the same network.
@@ -152,6 +153,38 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8084/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  gateway:
+    build:
+      # The gateway has its own standalone pom.xml — build context is
+      # just ./gateway (no need to reference services/).
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: loxia-gateway
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - loxia-net
+    # The gateway is the ONLY service exposed on the host.
+    # All API calls from the outside world go through port 8080.
+    ports:
+      - "8080:8080"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      catalog-service:
+        condition: service_healthy
+      rental-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
