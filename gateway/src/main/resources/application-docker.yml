@@ -1,0 +1,31 @@
+# =====================================================================
+# Loxia — gateway — Docker profile
+#
+# Activated by SPRING_PROFILES_ACTIVE=docker in docker-compose.yml.
+# Overrides only the route URIs: replaces localhost with Docker DNS
+# names so each service is reachable on the `loxia-net` network.
+# =====================================================================
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://auth-service:8081
+          predicates:
+            - Path=/api/auth/**
+
+        - id: catalog-service
+          uri: http://catalog-service:8082
+          predicates:
+            - Path=/api/listings/**
+
+        - id: rental-service
+          uri: http://rental-service:8083
+          predicates:
+            - Path=/api/applications/**
+
+        - id: notification-service
+          uri: http://notification-service:8084
+          predicates:
+            - Path=/api/notifications/**
