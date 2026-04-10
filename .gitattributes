@@ -1,0 +1,25 @@
+# =====================================================================
+# Loxia — git attributes
+# Force LF for files read by Linux containers at runtime.
+# Without this, Windows checkouts would store CRLF which breaks shell
+# scripts executed inside postgres/alpine containers.
+# =====================================================================
+
+# Shell scripts — MUST be LF (executed by Linux containers)
+*.sh           text eol=lf
+
+# Docker / YAML — LF to avoid subtle parse issues across platforms
+*.yml          text eol=lf
+*.yaml         text eol=lf
+Dockerfile     text eol=lf
+Dockerfile.*   text eol=lf
+.dockerignore  text eol=lf
+
+# Binary files (never convert)
+*.png          binary
+*.jpg          binary
+*.jpeg         binary
+*.gif          binary
+*.ico          binary
+*.jar          binary
+*.war          binary

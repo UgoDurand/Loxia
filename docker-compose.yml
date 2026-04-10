@@ -1,0 +1,81 @@
+# =====================================================================
+# Loxia — Docker Compose (local development stack)
+#
+# At this stage only the database layer is wired up:
+#   - loxia-db  : single PostgreSQL 16 container, hosts 4 isolated DBs
+#   - pgadmin   : pgAdmin 4 web UI to inspect the databases during dev
+#
+# The microservices (auth, catalog, rental, notification), the API
+# gateway and the frontend will be added in the next steps and will
+# all plug into the same `loxia-net` network.
+#
+# Runtime values come from the `.env` file at the repository root
+# (copied from `.env.example`). Defaults are provided as a safety net
+# for `docker compose config` sanity checks.
+# =====================================================================
+
+services:
+  loxia-db:
+    image: postgres:16
+    container_name: loxia-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      # These are consumed by scripts/init-multi-db.sh at first boot.
+      AUTH_DB_NAME: ${AUTH_DB_NAME:-auth_db}
+      CATALOG_DB_NAME: ${CATALOG_DB_NAME:-catalog_db}
+      RENTAL_DB_NAME: ${RENTAL_DB_NAME:-rental_db}
+      NOTIFICATION_DB_NAME: ${NOTIFICATION_DB_NAME:-notification_db}
+    volumes:
+      - loxia-db-data:/var/lib/postgresql/data
+      - ./scripts/init-multi-db.sh:/docker-entrypoint-initdb.d/init-multi-db.sh:ro
+    networks:
+      - loxia-net
+    # Postgres is NOT published on the host. It is only reachable from
+    # inside the Docker network (by pgAdmin today, by the microservices
+    # tomorrow). This mirrors the "only the gateway is exposed" rule.
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: loxia-pgadmin
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@loxia.dev}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      # Disable multi-user mode for a smoother local dev experience.
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - loxia-pgadmin-data:/var/lib/pgadmin
+      # Pre-register the loxia-db server so contributors don't have to
+      # add it by hand after each `docker compose down -v`. Password is
+      # still prompted on first connection (pgAdmin does not store it
+      # from servers.json for security reasons).
+      - ./config/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    networks:
+      - loxia-net
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+
+networks:
+  loxia-net:
+    name: loxia-net
+    driver: bridge
+
+volumes:
+  loxia-db-data:
+    name: loxia-db-data
+  loxia-pgadmin-data:
+    name: loxia-pgadmin-data
