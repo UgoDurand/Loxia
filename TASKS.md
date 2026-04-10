@@ -163,44 +163,33 @@
   - [x] Tests E2E : register (201), register duplicate (409), login (200 + tokens), login bad password (401), refresh (200 + nouveau refresh token)
   - [x] Merge `--no-ff` dans `develop` (`8ae54db`), branche supprimée
 
+- **Étape 10 — Filtre JWT gateway + pages Login/Register front** _(2026-04-10)_
+  - [x] Branche `feat/gateway-jwt-and-frontend-auth` créée depuis `develop`
+  - [x] `gateway/pom.xml` : ajout jjwt-api/impl/jackson 0.12.6
+  - [x] `gateway/application.yml` : `jwt.secret` branché sur env var
+  - [x] `JwtAuthenticationFilter` : valide le JWT HS256, bloque `/internal/**` (403), autorise les chemins publics (`/api/auth/**`, `GET /api/listings/**`, `/actuator/**`), propage `X-User-Id`, `X-User-Email`, `X-User-FullName`
+  - [x] `docker-compose.yml` : `JWT_SECRET` injecté dans gateway
+  - [x] `authStore.ts` (Zustand persist) : accessToken, refreshToken, user, setAuth, clearAuth
+  - [x] `axiosInstance.ts` : intercepteur Bearer + refresh auto sur 401 (queue des requêtes en attente, fallback clearAuth)
+  - [x] `authApi.ts` : login, register, refresh, logout, getMe
+  - [x] `LoginPage.tsx` : React Hook Form + Zod, gestion 401
+  - [x] `RegisterPage.tsx` : React Hook Form + Zod, gestion 409 (email déjà utilisé)
+  - [x] `App.tsx` : routes `/login` et `/register` avec `GuestRoute` (redirect si déjà authentifié)
+  - [x] `HomePage.tsx` : boutons Se connecter / S'inscrire fonctionnels, affichage nom + déconnexion si connecté
+  - [x] `nginx.conf` : proxy `/api → loxia-gateway:8080` (Docker)
+  - [x] `vite.config.ts` : proxy `/api → localhost:8080` (dev local)
+  - [x] Tests E2E : inscription, connexion, affichage nom, déconnexion — OK
+  - [x] Merge `--no-ff` dans `develop` (`28b68b7`), branche supprimée
+
 ---
 
 ## 🚧 In progress
 
-_(rien en cours — prochaine étape = Étape 10 filtre JWT gateway + pages Login/Register front)_
+_(rien en cours — prochaine étape = Étape 11 `catalog-service` complet + pages annonces)_
 
 ---
 
 ## ⏳ Backlog
-
-### 🏗 Phase d'amorçage (squelette technique)
-
-_(Phase terminée — voir section Done ci-dessus)_
-
-- [ ] **Étape 8** — Vérification end-to-end Docker Compose
-  - `docker compose up --build` → tous les services démarrent en `healthy`
-  - Vérification que la gateway route vers chaque service
-  - Vérification pgAdmin (4 bases + tables Flyway)
-  - Premier release : merge `develop` → `main`, tag `v0.1.0`
-
-### 🔐 Phase Authentification
-
-- [ ] **Étape 9** — `auth-service` complet
-  - Endpoints `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout`, `GET /api/auth/me`, `PUT /api/auth/me`
-  - Endpoint interne `GET /internal/users/{id}`
-  - Migration Flyway `V1__init.sql` (tables `users`, `refresh_tokens`)
-  - JWT HS256 (access 15 min + refresh 7 jours)
-  - Tests JUnit ciblés (JwtService, AuthController)
-  - Branche : `feat/auth-jwt-and-user-management`
-
-- [ ] **Étape 10** — Filtre JWT à la gateway + intégration front
-  - Filtre Spring Cloud Gateway qui valide le JWT et propage `X-User-Id`, `X-User-Email`, `X-User-FullName`
-  - Whitelist : `/api/auth/register`, `/api/auth/login`, `/api/auth/refresh`, `GET /api/listings/**`
-  - Deny-list explicite sur `/internal/**`
-  - Pages frontend Login + Register
-  - Store Zustand `authStore`
-  - Intercepteur Axios (attache token, refresh auto sur 401)
-  - Branche : `feat/gateway-jwt-and-frontend-auth`
 
 ### 📚 Phase Catalogue
 
