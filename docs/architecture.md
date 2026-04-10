@@ -137,7 +137,7 @@ Création des bases via `scripts/init-multi-db.sh` exécuté au démarrage du co
 | Conteneur               | Image / Build              | Port hôte | Notes                            |
 | ----------------------- | -------------------------- | --------- | -------------------------------- |
 | `loxia-db`              | `postgres:16`              | —         | 4 bases créées par script d'init |
-| `adminer`               | `adminer`                  | 8090      | Dev only                         |
+| `pgadmin`               | `dpage/pgadmin4:8`         | 8090      | Dev only — serveur pré-enregistré via `config/pgadmin/servers.json` |
 | `auth-service`          | build local                | —         | Réseau interne uniquement        |
 | `catalog-service`       | build local                | —         | Réseau interne uniquement        |
 | `rental-service`        | build local                | —         | Réseau interne uniquement        |
