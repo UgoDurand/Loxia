@@ -41,6 +41,20 @@
   - [x] Correction doc sur `develop` : `docs: clarify main is the default branch in gitflow strategy` (`fab0cab`)
   - [x] Vérifications finales : `CLAUDE.md` et `.env` absents du remote (404 confirmés), repo privé, 2 branches présentes
 
+- **Étape 3 — Docker Compose minimal (PostgreSQL + pgAdmin)** _(2026-04-10)_
+  - [x] Branche `feat/infra-postgres-base` créée depuis `develop`
+  - [x] `.gitattributes` : LF forcé pour `.sh`, `.yml`, `Dockerfile` (évite les soucis CRLF sous Windows)
+  - [x] `scripts/init-multi-db.sh` (POSIX sh) : crée les 4 bases `auth_db`, `catalog_db`, `rental_db`, `notification_db` au premier boot de Postgres
+  - [x] `config/pgadmin/servers.json` : pré-enregistrement du serveur `Loxia DB` dans pgAdmin
+  - [x] `docker-compose.yml` minimal : `loxia-db` (`postgres:16`, **non exposé** sur l'hôte) + `pgadmin` (`dpage/pgadmin4:8`, port 8090) avec healthcheck `pg_isready` et `depends_on: service_healthy`
+  - [x] Volumes nommés `loxia-db-data` et `loxia-pgadmin-data` pour la persistance
+  - [x] `.env.example` étoffé : `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD` (TLD `.dev` obligatoire, pgAdmin refuse `.local`)
+  - [x] Tests CLI : `docker compose up -d` → `loxia-db` healthy en <20s, 4 bases créées, pgAdmin `HTTP 200` sur `/browser/`
+  - [x] Vérification visuelle utilisateur OK : serveur `Loxia DB` pré-enregistré, 4 bases visibles dans l'Object Explorer
+  - [x] Docs mises à jour : `README.md` + `docs/architecture.md` (pgAdmin au lieu d'Adminer)
+  - [x] 2 commits atomiques sur `feat/infra-postgres-base` : `feat(infra): ...` (`831200a`) + `docs(infra): ...` (`2f5b869`)
+  - [x] Merge `--no-ff` dans `develop` (`46eb471`), branche feature supprimée en local et sur le remote
+
 - **Étape 4 — Parent POM Maven + squelette `auth-service`** _(2026-04-10)_
   - [x] Branche `feat/services-parent-pom-and-auth-skeleton` créée depuis `develop`
   - [x] Parent POM `services/pom.xml` (packaging `pom`, hérite de `spring-boot-starter-parent` 3.3.5, Java 21 LTS, `pluginManagement` pour le plugin Spring Boot avec exclusion Lombok, `dependencyManagement` pour pinner springdoc-openapi 2.6.0)
@@ -58,20 +72,6 @@
   - [x] Vérification visuelle utilisateur OK : table `flyway_schema_history` visible dans pgAdmin sous `auth_db.public` avec ses 10 colonnes
   - [x] 3 commits atomiques sur `feat/services-parent-pom-and-auth-skeleton` : `feat(services): ...` (`a1610a3`) + `feat(auth): ...` (`e334ba8`) + `feat(infra): ...` (`b70ef0f`)
   - [x] Merge `--no-ff` dans `develop` (`b7c07e9`), branche feature à supprimer (local + remote)
-
-- **Étape 3 — Docker Compose minimal (PostgreSQL + pgAdmin)** _(2026-04-10)_
-  - [x] Branche `feat/infra-postgres-base` créée depuis `develop`
-  - [x] `.gitattributes` : LF forcé pour `.sh`, `.yml`, `Dockerfile` (évite les soucis CRLF sous Windows)
-  - [x] `scripts/init-multi-db.sh` (POSIX sh) : crée les 4 bases `auth_db`, `catalog_db`, `rental_db`, `notification_db` au premier boot de Postgres
-  - [x] `config/pgadmin/servers.json` : pré-enregistrement du serveur `Loxia DB` dans pgAdmin
-  - [x] `docker-compose.yml` minimal : `loxia-db` (`postgres:16`, **non exposé** sur l'hôte) + `pgadmin` (`dpage/pgadmin4:8`, port 8090) avec healthcheck `pg_isready` et `depends_on: service_healthy`
-  - [x] Volumes nommés `loxia-db-data` et `loxia-pgadmin-data` pour la persistance
-  - [x] `.env.example` étoffé : `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD` (TLD `.dev` obligatoire, pgAdmin refuse `.local`)
-  - [x] Tests CLI : `docker compose up -d` → `loxia-db` healthy en <20s, 4 bases créées, pgAdmin `HTTP 200` sur `/browser/`
-  - [x] Vérification visuelle utilisateur OK : serveur `Loxia DB` pré-enregistré, 4 bases visibles dans l'Object Explorer
-  - [x] Docs mises à jour : `README.md` + `docs/architecture.md` (pgAdmin au lieu d'Adminer)
-  - [x] 2 commits atomiques sur `feat/infra-postgres-base` : `feat(infra): ...` (`831200a`) + `docs(infra): ...` (`2f5b869`)
-  - [x] Merge `--no-ff` dans `develop` (`46eb471`), branche feature supprimée en local et sur le remote
 
 - **Étape 5 — Squelettes `catalog-service`, `rental-service`, `notification-service`** _(2026-04-10)_
   - [x] Branche `feat/services-skeletons-catalog-rental-notification` créée depuis `develop`
