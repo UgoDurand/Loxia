@@ -1,0 +1,3 @@
+# Flyway migrations directory. First real migration (V1__init.sql with
+# users and refresh_tokens tables) will be added when the full auth
+# feature is implemented.
