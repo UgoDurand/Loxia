@@ -109,23 +109,37 @@
 
 ---
 
+- **Étape 7 — Squelette frontend React** _(2026-04-10)_
+  - [x] Branche `feat/frontend-skeleton` créée depuis `develop`
+  - [x] `npm create vite@latest frontend -- --template react-ts` (React 18, TypeScript, Vite 8)
+  - [x] Dépendances installées : Tailwind CSS v4 (`@tailwindcss/vite`), shadcn/ui (Radix, thème par défaut), React Router v6, TanStack Query v5, Zustand, Axios, React Hook Form, Zod, lucide-react
+  - [x] Alias `@/` → `src/` configuré dans `vite.config.ts` + `tsconfig.app.json` + `tsconfig.json`
+  - [x] `src/pages/HomePage.tsx` : page placeholder (icône, titre Loxia, sous-titre, boutons auth désactivés)
+  - [x] Dossiers créés : `src/pages/`, `src/hooks/`, `src/api/`, `src/store/`, `src/types/`
+  - [x] `nginx.conf` : SPA fallback `try_files → index.html`, cache assets Vite, endpoint `/health`
+  - [x] `Dockerfile` multi-stage (Node 20 Alpine build + Nginx Alpine runtime)
+  - [x] `frontend/.dockerignore` : exclut `node_modules`, `dist`, `.env*`
+  - [x] Intégration `docker-compose.yml` : service `frontend` exposé `:3000`, `depends_on: gateway healthy`
+  - [x] Build Docker testé : `docker compose build frontend` → image `loxia-frontend` produite (npm ci ~13s, Vite build ~3s)
+  - [x] Boot testé : `docker compose up -d frontend` → `loxia-frontend` passe `(healthy)` en ~15s
+  - [x] `curl http://localhost:3000/health` → `ok`
+  - [x] `http://localhost:3000/` → `200`, page placeholder visible dans le navigateur
+  - [x] Fallback SPA : `/route-inexistante` → `200` (Nginx sert `index.html`)
+  - [x] Stack complète : 8 conteneurs tous `healthy` (db + 4 services + gateway + frontend + pgAdmin)
+  - [x] 2 commits atomiques sur `feat/frontend-skeleton` : `feat(frontend): ...` (`8ffadd0`) + `feat(infra): ...` (`1bd86f0`)
+  - [x] Merge `--no-ff` dans `develop` (`7f8c5bb`), branche feature supprimée en local et sur le remote
+
+---
+
 ## 🚧 In progress
 
-_(rien en cours — prochaine étape = Étape 7 frontend React)_
+_(rien en cours — prochaine étape = Étape 8 vérification E2E + release v0.1.0)_
 
 ---
 
 ## ⏳ Backlog
 
 ### 🏗 Phase d'amorçage (squelette technique)
-
-- [ ] **Étape 7** — Squelette frontend React
-  - `npm create vite@latest frontend -- --template react-ts`
-  - Installation Tailwind, shadcn/ui, React Router, TanStack Query, Zustand, Axios, React Hook Form, Zod, lucide-react
-  - Page d'accueil placeholder Loxia
-  - `Dockerfile` multi-stage + `nginx.conf`
-  - Intégration au compose
-  - Branche : `feat/frontend-skeleton`
 
 - [ ] **Étape 8** — Vérification end-to-end Docker Compose
   - `docker compose up --build` → tous les services démarrent en `healthy`

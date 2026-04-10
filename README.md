@@ -184,7 +184,7 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 
 ## Démarrage rapide
 
-> ℹ️ **État actuel** : l'infrastructure Docker, les 4 microservices métier (`auth`, `catalog`, `rental`, `notification`) et la **gateway** Spring Cloud Gateway sont en place sous forme de squelettes fonctionnels. Le **frontend** React sera ajouté à l'étape suivante. Voir [`TASKS.md`](TASKS.md) pour le détail.
+> ℹ️ **État actuel** : l'infrastructure Docker complète est en place — les 4 microservices métier, la **gateway** Spring Cloud Gateway et le **frontend** React (page placeholder) tournent tous `healthy`. Les endpoints métier (auth, catalog, rental, notifications) seront implémentés aux étapes suivantes. Voir [`TASKS.md`](TASKS.md) pour le détail.
 
 ### 1. Cloner et préparer
 
@@ -198,7 +198,7 @@ cp .env.example .env          # adapter les secrets si besoin
 ### 2. Démarrer la stack
 
 ```bash
-docker compose up -d          # lance db + gateway + 4 services + pgAdmin
+docker compose up -d          # lance db + gateway + frontend + 4 services + pgAdmin
 docker compose ps             # tous doivent passer (healthy) en <3 min
 docker compose logs -f        # suivre les logs en direct (optionnel)
 ```
@@ -239,11 +239,12 @@ docker compose down           # stoppe les conteneurs, garde les volumes (donné
 docker compose down -v        # stoppe ET efface les volumes (DB wipée — à utiliser avec précaution)
 ```
 
-### 6. Plus tard (une fois le frontend en place)
+### 6. Accès aux services exposés
 
 ```bash
-# Frontend : http://localhost:3000  (étape 7 — à venir)
-# Gateway  : http://localhost:8080  ✅ déjà disponible
+# Frontend : http://localhost:3000  ✅ page placeholder Loxia
+# Gateway  : http://localhost:8080  ✅ API entry point
+# pgAdmin  : http://localhost:8090  ✅ dev only
 ```
 
 ---
