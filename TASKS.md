@@ -144,9 +144,30 @@
 
 ---
 
+- **Étape 9 — `auth-service` complet** _(2026-04-10)_
+  - [x] Branche `feat/auth-jwt-and-user-management` créée depuis `develop`
+  - [x] `pom.xml` : ajout `spring-boot-starter-validation`, `spring-boot-starter-security`, `jjwt-api/impl/jackson` 0.12.6
+  - [x] Flyway `V1__init.sql` : tables `users` (email unique, password_hash, full_name) + `refresh_tokens` (token_hash SHA-256, expires_at), indexes sur email et token_hash
+  - [x] Entités JPA : `User`, `RefreshToken` (Lombok `@Builder`, `@PrePersist`/`@PreUpdate`)
+  - [x] Repositories : `UserRepository`, `RefreshTokenRepository` (JPQL delete by userId)
+  - [x] DTOs : `RegisterRequest`, `LoginRequest`, `RefreshRequest`, `UpdateProfileRequest`, `AuthResponse`, `UserResponse`
+  - [x] `JwtService` : génération HS256 (15 min), extraction claims, validation
+  - [x] `RefreshTokenService` : génération UUID, stockage hash SHA-256 Base64url, validation, révocation, rotation
+  - [x] `AuthService` : register (BCrypt), login, refresh (rotation), logout, getProfile, updateProfile
+  - [x] `AuthController` : `POST /api/auth/register|login|refresh|logout`, `GET|PUT /api/auth/me` (X-User-Id header)
+  - [x] `InternalUserController` : `GET /internal/users/{id}`
+  - [x] `SecurityConfig` : stateless, CSRF off, tous endpoints permit (gateway enforce JWT à l'étape 10)
+  - [x] `JWT_SECRET` injecté via env var (docker-compose + application.yml)
+  - [x] Tests : `JwtServiceTest` (6 cas), `AuthServiceTest` (4 cas) — **10/10 verts**
+  - [x] Build Docker OK, service `healthy`, migration Flyway exécutée (tables `users` + `refresh_tokens` visibles dans pgAdmin)
+  - [x] Tests E2E : register (201), register duplicate (409), login (200 + tokens), login bad password (401), refresh (200 + nouveau refresh token)
+  - [x] Merge `--no-ff` dans `develop` (`8ae54db`), branche supprimée
+
+---
+
 ## 🚧 In progress
 
-_(rien en cours — phase d'amorçage terminée, prochaine phase = Authentification)_
+_(rien en cours — prochaine étape = Étape 10 filtre JWT gateway + pages Login/Register front)_
 
 ---
 
