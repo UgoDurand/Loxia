@@ -41,18 +41,34 @@
   - [x] Correction doc sur `develop` : `docs: clarify main is the default branch in gitflow strategy` (`fab0cab`)
   - [x] Vérifications finales : `CLAUDE.md` et `.env` absents du remote (404 confirmés), repo privé, 2 branches présentes
 
+- **Étape 3 — Docker Compose minimal (PostgreSQL + pgAdmin)** _(2026-04-10)_
+  - [x] Branche `feat/infra-postgres-base` créée depuis `develop`
+  - [x] `.gitattributes` : LF forcé pour `.sh`, `.yml`, `Dockerfile` (évite les soucis CRLF sous Windows)
+  - [x] `scripts/init-multi-db.sh` (POSIX sh) : crée les 4 bases `auth_db`, `catalog_db`, `rental_db`, `notification_db` au premier boot de Postgres
+  - [x] `config/pgadmin/servers.json` : pré-enregistrement du serveur `Loxia DB` dans pgAdmin
+  - [x] `docker-compose.yml` minimal : `loxia-db` (`postgres:16`, **non exposé** sur l'hôte) + `pgadmin` (`dpage/pgadmin4:8`, port 8090) avec healthcheck `pg_isready` et `depends_on: service_healthy`
+  - [x] Volumes nommés `loxia-db-data` et `loxia-pgadmin-data` pour la persistance
+  - [x] `.env.example` étoffé : `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD` (TLD `.dev` obligatoire, pgAdmin refuse `.local`)
+  - [x] Tests CLI : `docker compose up -d` → `loxia-db` healthy en <20s, 4 bases créées, pgAdmin `HTTP 200` sur `/browser/`
+  - [x] Vérification visuelle utilisateur OK : serveur `Loxia DB` pré-enregistré, 4 bases visibles dans l'Object Explorer
+  - [x] Docs mises à jour : `README.md` + `docs/architecture.md` (pgAdmin au lieu d'Adminer)
+  - [x] 2 commits atomiques sur `feat/infra-postgres-base` : `feat(infra): ...` (`831200a`) + `docs(infra): ...` (`2f5b869`)
+  - [x] Merge `--no-ff` dans `develop` (`46eb471`), branche feature supprimée en local et sur le remote
+
 ---
 
 ## 🚧 In progress
 
-- **Étape 3 — Docker Compose minimal (PostgreSQL + Adminer)** _(annoncée, en attente de go)_
-  - [ ] Création de la branche `feat/infra-postgres-base` depuis `develop`
-  - [ ] Création de `scripts/init-multi-db.sh` (crée `auth_db`, `catalog_db`, `rental_db`, `notification_db` au démarrage du conteneur Postgres)
-  - [ ] Création de `docker-compose.yml` minimal : service `loxia-db` (image `postgres:16`) + service `adminer` (port 8090)
-  - [ ] Healthcheck Postgres (`pg_isready`)
-  - [ ] Test : `docker compose up -d`, vérification des 4 bases via Adminer
-  - [ ] `docker compose down` (sans `-v` pour garder le volume de test)
-  - [ ] Commit(s) atomiques sur `feat/infra-postgres-base` + push
+- **Étape 4 — Parent POM Maven + squelette `auth-service`** _(annoncée, en attente de go)_
+  - [ ] Création de la branche `feat/services-parent-pom-and-auth-skeleton` depuis `develop`
+  - [ ] Parent POM `services/pom.xml` (Java 21, Spring Boot 3.3.x, versions des dépendances communes, Lombok)
+  - [ ] Squelette `services/auth-service/` : `pom.xml` (hérite du parent), `AuthApplication.java` (package `com.loxia.auth`), `application.yml` (port 8081) + `application-docker.yml` (profil docker, URL JDBC interne), Maven Wrapper (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/`)
+  - [ ] Dépendances minimales : `spring-boot-starter-web`, `spring-boot-starter-actuator` (healthcheck), `spring-boot-starter-data-jpa`, driver PostgreSQL, Flyway (pour préparer l'étape 9)
+  - [ ] Premier endpoint : `/actuator/health` exposé
+  - [ ] `Dockerfile` multi-stage (stage 1 : `maven:3.9-eclipse-temurin-21` → build JAR ; stage 2 : `eclipse-temurin:21-jre-alpine` → runtime slim)
+  - [ ] Intégration au `docker-compose.yml` : service `auth-service`, non exposé sur l'hôte, `depends_on: loxia-db service_healthy`, `SPRING_PROFILES_ACTIVE=docker`, healthcheck Docker sur `/actuator/health`
+  - [ ] Test : `docker compose up -d --build auth-service` → passe `healthy`, log de démarrage Spring Boot propre, connexion JDBC réussie
+  - [ ] 1 ou 2 commits atomiques + push
   - [ ] Après okay utilisateur : merge `--no-ff` dans `develop`, suppression de la branche, mise à jour de `TASKS.md`
 
 ---
@@ -60,13 +76,6 @@
 ## ⏳ Backlog
 
 ### 🏗 Phase d'amorçage (squelette technique)
-
-- [ ] **Étape 4** — Parent POM Maven + squelette `auth-service`
-  - `services/pom.xml` (Java 21, Spring Boot 3.3.x, Lombok, dépendances communes)
-  - Squelette Spring Boot `auth-service` (boot vide + healthcheck)
-  - `Dockerfile` multi-stage
-  - Intégration au `docker-compose.yml`
-  - Branche : `feat/services-parent-pom-and-auth-skeleton`
 
 - [ ] **Étape 5** — Squelettes `catalog-service`, `rental-service`, `notification-service`
   - Même pattern que `auth-service` (boot vide + healthcheck + Dockerfile)
@@ -90,7 +99,7 @@
 - [ ] **Étape 8** — Vérification end-to-end Docker Compose
   - `docker compose up --build` → tous les services démarrent en `healthy`
   - Vérification que la gateway route vers chaque service
-  - Vérification Adminer (4 bases + tables Flyway)
+  - Vérification pgAdmin (4 bases + tables Flyway)
   - Premier release : merge `develop` → `main`, tag `v0.1.0`
 
 ### 🔐 Phase Authentification
