@@ -184,7 +184,7 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 
 ## Démarrage rapide
 
-> ℹ️ **État actuel** : l'infrastructure Docker + les 4 microservices métier (`auth`, `catalog`, `rental`, `notification`) sont en place sous forme de squelettes Spring Boot qui démarrent `healthy` et se connectent à leur base Postgres respective. La **gateway** et le **frontend** seront ajoutés aux étapes suivantes. Voir [`TASKS.md`](TASKS.md) pour le détail.
+> ℹ️ **État actuel** : l'infrastructure Docker, les 4 microservices métier (`auth`, `catalog`, `rental`, `notification`) et la **gateway** Spring Cloud Gateway sont en place sous forme de squelettes fonctionnels. Le **frontend** React sera ajouté à l'étape suivante. Voir [`TASKS.md`](TASKS.md) pour le détail.
 
 ### 1. Cloner et préparer
 
@@ -198,17 +198,21 @@ cp .env.example .env          # adapter les secrets si besoin
 ### 2. Démarrer la stack
 
 ```bash
-docker compose up -d          # lance db + 4 services + pgAdmin
-docker compose ps             # tous doivent passer (healthy) en <2 min
+docker compose up -d          # lance db + gateway + 4 services + pgAdmin
+docker compose ps             # tous doivent passer (healthy) en <3 min
 docker compose logs -f        # suivre les logs en direct (optionnel)
 ```
 
-Au premier build, Docker doit télécharger les dépendances Maven des 4 services : compter **5 à 10 minutes**. Les builds suivants sont beaucoup plus rapides grâce au cache Docker layer.
+Au premier build, Docker doit télécharger les dépendances Maven des 5 services (4 microservices + gateway) : compter **5 à 10 minutes**. Les builds suivants sont beaucoup plus rapides grâce au cache Docker layer.
 
 ### 3. Vérifier que tout est up
 
 ```bash
-# Santé de chaque microservice (depuis l'intérieur du réseau Docker)
+# Gateway — seul point d'entrée exposé sur l'hôte (port 8080)
+curl http://localhost:8080/actuator/health
+# → {"status":"UP","groups":["liveness","readiness"]}
+
+# Microservices — accessibles uniquement depuis le réseau Docker interne
 docker compose exec auth-service         wget -qO- http://localhost:8081/actuator/health
 docker compose exec catalog-service      wget -qO- http://localhost:8082/actuator/health
 docker compose exec rental-service       wget -qO- http://localhost:8083/actuator/health
@@ -216,7 +220,7 @@ docker compose exec notification-service wget -qO- http://localhost:8084/actuato
 # → chacun doit répondre {"status":"UP","groups":["liveness","readiness"]}
 ```
 
-> 🔒 **Les microservices ne sont pas exposés sur l'hôte** (règle d'isolation réseau : seule la gateway le sera une fois ajoutée). Ne cherche pas à les atteindre depuis `http://localhost:8081` — ça ne fonctionnera jamais, c'est voulu. Utilise `docker compose exec` comme ci-dessus tant que la gateway n'est pas en place.
+> 🔒 **Les microservices ne sont pas exposés sur l'hôte.** Toutes les requêtes extérieures transitent par la gateway (`http://localhost:8080`). Ne cherche pas à atteindre `http://localhost:8081` directement — c'est voulu.
 
 ### 4. pgAdmin (inspection des bases)
 
@@ -235,11 +239,11 @@ docker compose down           # stoppe les conteneurs, garde les volumes (donné
 docker compose down -v        # stoppe ET efface les volumes (DB wipée — à utiliser avec précaution)
 ```
 
-### 6. Plus tard (une fois la gateway et le frontend en place)
+### 6. Plus tard (une fois le frontend en place)
 
 ```bash
-# Frontend : http://localhost:3000
-# Gateway  : http://localhost:8080
+# Frontend : http://localhost:3000  (étape 7 — à venir)
+# Gateway  : http://localhost:8080  ✅ déjà disponible
 ```
 
 ---
