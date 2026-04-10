@@ -30,19 +30,110 @@
   - [x] Création de `CLAUDE.md` local (gitignored)
   - [x] Création de `docs/architecture.md` (squelette)
 
+- **Étape 2 — Initialisation git + repo GitHub privé + branches GitFlow** _(2026-04-10)_
+  - [x] Préflight : `git` 2.47, `gh` 2.89, `gh auth status` (logged as `UgoDurand`)
+  - [x] `git init -b main` + `git add .` + vérification que `CLAUDE.md` n'est PAS staged
+  - [x] Commit initial sur `main` : `chore: initial project structure and documentation` (`b5c2a98`, 22 fichiers / 919 insertions)
+  - [x] Création du repo GitHub **privé** `UgoDurand/Loxia` via `gh repo create`
+  - [x] `gh auth setup-git` pour le credential helper, puis `git push -u origin main`
+  - [x] Création de la branche `develop` depuis `main` et `git push -u origin develop`
+  - [x] `main` conservée comme branche par défaut du dépôt (ajustement GitFlow suite au retour utilisateur)
+  - [x] Correction doc sur `develop` : `docs: clarify main is the default branch in gitflow strategy` (`fab0cab`)
+  - [x] Vérifications finales : `CLAUDE.md` et `.env` absents du remote (404 confirmés), repo privé, 2 branches présentes
+
+- **Étape 3 — Docker Compose minimal (PostgreSQL + pgAdmin)** _(2026-04-10)_
+  - [x] Branche `feat/infra-postgres-base` créée depuis `develop`
+  - [x] `.gitattributes` : LF forcé pour `.sh`, `.yml`, `Dockerfile` (évite les soucis CRLF sous Windows)
+  - [x] `scripts/init-multi-db.sh` (POSIX sh) : crée les 4 bases `auth_db`, `catalog_db`, `rental_db`, `notification_db` au premier boot de Postgres
+  - [x] `config/pgadmin/servers.json` : pré-enregistrement du serveur `Loxia DB` dans pgAdmin
+  - [x] `docker-compose.yml` minimal : `loxia-db` (`postgres:16`, **non exposé** sur l'hôte) + `pgadmin` (`dpage/pgadmin4:8`, port 8090) avec healthcheck `pg_isready` et `depends_on: service_healthy`
+  - [x] Volumes nommés `loxia-db-data` et `loxia-pgadmin-data` pour la persistance
+  - [x] `.env.example` étoffé : `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD` (TLD `.dev` obligatoire, pgAdmin refuse `.local`)
+  - [x] Tests CLI : `docker compose up -d` → `loxia-db` healthy en <20s, 4 bases créées, pgAdmin `HTTP 200` sur `/browser/`
+  - [x] Vérification visuelle utilisateur OK : serveur `Loxia DB` pré-enregistré, 4 bases visibles dans l'Object Explorer
+  - [x] Docs mises à jour : `README.md` + `docs/architecture.md` (pgAdmin au lieu d'Adminer)
+  - [x] 2 commits atomiques sur `feat/infra-postgres-base` : `feat(infra): ...` (`831200a`) + `docs(infra): ...` (`2f5b869`)
+  - [x] Merge `--no-ff` dans `develop` (`46eb471`), branche feature supprimée en local et sur le remote
+
+- **Étape 4 — Parent POM Maven + squelette `auth-service`** _(2026-04-10)_
+  - [x] Branche `feat/services-parent-pom-and-auth-skeleton` créée depuis `develop`
+  - [x] Parent POM `services/pom.xml` (packaging `pom`, hérite de `spring-boot-starter-parent` 3.3.5, Java 21 LTS, `pluginManagement` pour le plugin Spring Boot avec exclusion Lombok, `dependencyManagement` pour pinner springdoc-openapi 2.6.0)
+  - [x] **Maven Wrapper unique à la racine `services/`** (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/maven-wrapper.properties` → Maven 3.9.9) — choix multi-module : un seul wrapper partagé par tous les services au lieu d'un par module
+  - [x] Squelette `services/auth-service/` : `pom.xml` (hérite du parent, `finalName: auth-service`), `AuthApplication.java` minimaliste dans `com.loxia.auth`, `application.yml` (port 8081, profil par défaut localhost) + `application-docker.yml` (override JDBC vers `loxia-db`), dossier `db/migration/` prêt pour Flyway (avec `.gitkeep`)
+  - [x] Dépendances auth-service : `spring-boot-starter-web`, `spring-boot-starter-actuator`, `spring-boot-starter-data-jpa`, `postgresql` (runtime), `flyway-core` + `flyway-database-postgresql`, `lombok` (optional), `spring-boot-starter-test`
+  - [x] `/actuator/health` exposé (seul endpoint activé via `management.endpoints.web.exposure.include=health`)
+  - [x] `Dockerfile` multi-stage : stage 1 `maven:3.9-eclipse-temurin-21` (copie pom parent + pom module → `mvn dependency:go-offline` → copie sources → `mvn package -DskipTests`), stage 2 `eclipse-temurin:21-jre-alpine` (user non-root `loxia`, `EXPOSE 8081`, `ENTRYPOINT java -jar`)
+  - [x] `build context: ./services` + `dockerfile: auth-service/Dockerfile` pour permettre au Dockerfile de lire à la fois le parent POM et le module POM
+  - [x] Intégration `docker-compose.yml` : service `auth-service` **non exposé sur l'hôte** (`expose: 8081`), `SPRING_PROFILES_ACTIVE=docker`, `depends_on: loxia-db service_healthy`, healthcheck `wget http://localhost:8081/actuator/health` (interval 10s, retries 10, start_period 60s)
+  - [x] `.gitattributes` étoffé : `mvnw` forcé en LF (exécuté par Linux), `*.cmd`/`*.bat` forcés en CRLF (exécutés par Windows)
+  - [x] Build Docker testé : `docker compose build auth-service` → OK (143s dep download + 9s package), image `loxia-auth-service:latest` produite
+  - [x] Boot testé : `docker compose up -d auth-service` → conteneur `healthy` en ~50s, logs Spring Boot propres (Java 21.0.10, Spring Boot 3.3.5, profil docker actif, Hikari connecté à `jdbc:postgresql://loxia-db:5432/auth_db`, Flyway a créé `flyway_schema_history` avec warning "No migrations found" attendu)
+  - [x] `/actuator/health` retourne `{"status":"UP","groups":["liveness","readiness"]}` via `docker compose exec`
+  - [x] Vérification visuelle utilisateur OK : table `flyway_schema_history` visible dans pgAdmin sous `auth_db.public` avec ses 10 colonnes
+  - [x] 3 commits atomiques sur `feat/services-parent-pom-and-auth-skeleton` : `feat(services): ...` (`a1610a3`) + `feat(auth): ...` (`e334ba8`) + `feat(infra): ...` (`b70ef0f`)
+  - [x] Merge `--no-ff` dans `develop` (`b7c07e9`), branche feature à supprimer (local + remote)
+
+- **Étape 5 — Squelettes `catalog-service`, `rental-service`, `notification-service`** _(2026-04-10)_
+  - [x] Branche `feat/services-skeletons-catalog-rental-notification` créée depuis `develop`
+  - [x] Parent POM `services/pom.xml` : 3 nouveaux modules déclarés (`catalog-service`, `rental-service`, `notification-service`) → le parent contient maintenant les 4 microservices
+  - [x] Squelettes créés sur le même pattern qu'`auth-service` (pom.xml qui hérite du parent, classe main `@SpringBootApplication`, `application.yml` + `application-docker.yml`, dossier Flyway `db/migration/.gitkeep`, Dockerfile multi-stage)
+  - [x] `catalog-service` : port 8082, base `catalog_db`, package `com.loxia.catalog`, class `CatalogApplication`
+  - [x] `rental-service` : port 8083, base `rental_db`, package `com.loxia.rental`, class `RentalApplication`
+  - [x] `notification-service` : port 8084, base `notification_db`, package `com.loxia.notification`, class `NotificationApplication`
+  - [x] Fix critique sur les 4 Dockerfiles : le parent POM déclarant 4 modules, chaque Dockerfile doit copier **les 4 POMs enfants** (pas juste le sien) avant `dependency:go-offline`, sinon Maven refuse de lire le parent. Auth-service Dockerfile mis à jour en conséquence.
+  - [x] Intégration `docker-compose.yml` : 3 nouveaux services, tous non exposés (`expose:` uniquement), `depends_on: loxia-db healthy`, healthcheck wget sur `/actuator/health`, variables d'env `SPRING_PROFILES_ACTIVE=docker` + credentials DB
+  - [x] Build parallèle testé : `docker compose build --parallel auth-service catalog-service rental-service notification-service` → 4 images produites
+  - [x] Stack complète testée : `docker compose up -d` → 6 conteneurs (db + pgAdmin + 4 services) **tous `(healthy)` en ~90s**
+  - [x] 4× `/actuator/health` → `{"status":"UP","groups":["liveness","readiness"]}`
+  - [x] 4× Flyway : chaque base a bien sa table `flyway_schema_history`
+  - [x] Logs Spring Boot propres pour les 3 nouveaux services (Started in ~12s, profil docker actif, HikariPool connecté à la bonne base)
+  - [x] Vérification visuelle utilisateur OK dans pgAdmin : 4 bases visibles avec chacune sa `flyway_schema_history`
+  - [x] Docs `README.md` (section Démarrage rapide réécrite pour refléter l'état actuel) et `docs/architecture.md` (table de topologie avec colonne "Statut actuel") mises à jour sur la feature branch
+  - [x] 6 commits atomiques sur `feat/services-skeletons-catalog-rental-notification` : `feat(services)` (`9a12e5a`) + `feat(catalog)` (`d41abd3`) + `feat(rental)` (`39b0548`) + `feat(notification)` (`09df8c4`) + `feat(infra)` (`3da7799`) + `docs(infra)` (`6c08cde`)
+  - [x] Merge `--no-ff` dans `develop` (`5387ade`), branche feature supprimée en local et sur le remote
+
+- **Étape 6 — Squelette `gateway` Spring Cloud Gateway** _(2026-04-10)_
+  - [x] Branche `feat/gateway-skeleton` créée depuis `develop`
+  - [x] `gateway/pom.xml` standalone (hérite de `spring-boot-starter-parent` 3.3.5, importe Spring Cloud BOM 2023.0.3), pas intégré dans `services/pom.xml` (dépendances WebFlux distinctes des services JPA)
+  - [x] `GatewayApplication.java` dans `com.loxia.gateway`
+  - [x] `application.yml` (port 8080, 4 routes localhost, CORS dev ouvert) + `application-docker.yml` (override URIs vers DNS Docker)
+  - [x] Routes : `/api/auth/**` → `auth-service:8081`, `/api/listings/**` → `catalog-service:8082`, `/api/applications/**` → `rental-service:8083`, `/api/notifications/**` → `notification-service:8084`
+  - [x] `Dockerfile` multi-stage (Maven 3.9 + Temurin 21 JRE Alpine, user non-root `loxia`, `EXPOSE 8080`)
+  - [x] Intégration `docker-compose.yml` : seul service avec `ports: 8080:8080`, `depends_on` les 4 microservices `service_healthy`, healthcheck `/actuator/health`
+  - [x] Build testé : `docker compose build gateway` → image `loxia-gateway` produite (Spring Cloud deps ~75s, package ~8s)
+  - [x] Boot testé : `docker compose up -d gateway` → `loxia-gateway` passe `(healthy)`, Java 21.0.10, Spring Boot 3.3.5, profil docker actif, démarrage en ~2s
+  - [x] `curl http://localhost:8080/actuator/health` → `{"status":"UP","groups":["liveness","readiness"]}`
+  - [x] Logs gateway : `New routes count: 4` — 4 routes chargées
+  - [x] 2 commits atomiques sur `feat/gateway-skeleton` : `feat(gateway): ...` (`3860c9b`) + `feat(infra): ...` (`b812f93`)
+  - [x] Merge `--no-ff` dans `develop` (`31e7ef6`), branche feature supprimée en local et sur le remote
+
+---
+
+- **Étape 7 — Squelette frontend React** _(2026-04-10)_
+  - [x] Branche `feat/frontend-skeleton` créée depuis `develop`
+  - [x] `npm create vite@latest frontend -- --template react-ts` (React 18, TypeScript, Vite 8)
+  - [x] Dépendances installées : Tailwind CSS v4 (`@tailwindcss/vite`), shadcn/ui (Radix, thème par défaut), React Router v6, TanStack Query v5, Zustand, Axios, React Hook Form, Zod, lucide-react
+  - [x] Alias `@/` → `src/` configuré dans `vite.config.ts` + `tsconfig.app.json` + `tsconfig.json`
+  - [x] `src/pages/HomePage.tsx` : page placeholder (icône, titre Loxia, sous-titre, boutons auth désactivés)
+  - [x] Dossiers créés : `src/pages/`, `src/hooks/`, `src/api/`, `src/store/`, `src/types/`
+  - [x] `nginx.conf` : SPA fallback `try_files → index.html`, cache assets Vite, endpoint `/health`
+  - [x] `Dockerfile` multi-stage (Node 20 Alpine build + Nginx Alpine runtime)
+  - [x] `frontend/.dockerignore` : exclut `node_modules`, `dist`, `.env*`
+  - [x] Intégration `docker-compose.yml` : service `frontend` exposé `:3000`, `depends_on: gateway healthy`
+  - [x] Build Docker testé : `docker compose build frontend` → image `loxia-frontend` produite (npm ci ~13s, Vite build ~3s)
+  - [x] Boot testé : `docker compose up -d frontend` → `loxia-frontend` passe `(healthy)` en ~15s
+  - [x] `curl http://localhost:3000/health` → `ok`
+  - [x] `http://localhost:3000/` → `200`, page placeholder visible dans le navigateur
+  - [x] Fallback SPA : `/route-inexistante` → `200` (Nginx sert `index.html`)
+  - [x] Stack complète : 8 conteneurs tous `healthy` (db + 4 services + gateway + frontend + pgAdmin)
+  - [x] 2 commits atomiques sur `feat/frontend-skeleton` : `feat(frontend): ...` (`8ffadd0`) + `feat(infra): ...` (`1bd86f0`)
+  - [x] Merge `--no-ff` dans `develop` (`7f8c5bb`), branche feature supprimée en local et sur le remote
+
 ---
 
 ## 🚧 In progress
 
-- **Étape 2 — Initialisation git + repo GitHub privé + branches GitFlow** _(annoncée, en attente de go)_
-  - [ ] Préflight : `git --version`, `gh --version`, `gh auth status`
-  - [ ] `git init -b main` dans le dossier du projet
-  - [ ] `git add .` puis `git status` pour vérifier que `CLAUDE.md` n'est PAS staged
-  - [ ] Premier commit `chore: initial project structure and documentation` sur `main`
-  - [ ] Création du repo GitHub **privé** `Loxia` via `gh repo create --private --source=. --remote=origin --push`
-  - [ ] Création de la branche `develop` à partir de `main` et push avec tracking
-  - [ ] Configuration de `develop` comme branche par défaut côté GitHub (`gh repo edit --default-branch develop`)
-  - [ ] Vérification finale (`gh repo view Loxia`, contrôle que `CLAUDE.md` n'est pas sur le remote)
+_(rien en cours — prochaine étape = Étape 8 vérification E2E + release v0.1.0)_
 
 ---
 
@@ -50,42 +141,10 @@
 
 ### 🏗 Phase d'amorçage (squelette technique)
 
-- [ ] **Étape 3** — Docker Compose minimal (PostgreSQL + Adminer)
-  - `scripts/init-multi-db.sh` (création des 4 bases dans Postgres)
-  - `docker-compose.yml` minimal : `loxia-db` + `adminer`
-  - Test de boot, vérification que les 4 bases sont créées
-  - Branche : `feat/infra-postgres-base`
-
-- [ ] **Étape 4** — Parent POM Maven + squelette `auth-service`
-  - `services/pom.xml` (Java 21, Spring Boot 3.3.x, Lombok, dépendances communes)
-  - Squelette Spring Boot `auth-service` (boot vide + healthcheck)
-  - `Dockerfile` multi-stage
-  - Intégration au `docker-compose.yml`
-  - Branche : `feat/services-parent-pom-and-auth-skeleton`
-
-- [ ] **Étape 5** — Squelettes `catalog-service`, `rental-service`, `notification-service`
-  - Même pattern que `auth-service` (boot vide + healthcheck + Dockerfile)
-  - Intégration au compose
-  - Branche : `feat/services-skeletons-catalog-rental-notification`
-
-- [ ] **Étape 6** — Squelette `gateway` Spring Cloud Gateway
-  - Routes vers les 4 services (vides pour l'instant)
-  - CORS dev (ouvert)
-  - Pas encore de filtre JWT
-  - Branche : `feat/gateway-skeleton`
-
-- [ ] **Étape 7** — Squelette frontend React
-  - `npm create vite@latest frontend -- --template react-ts`
-  - Installation Tailwind, shadcn/ui, React Router, TanStack Query, Zustand, Axios, React Hook Form, Zod, lucide-react
-  - Page d'accueil placeholder Loxia
-  - `Dockerfile` multi-stage + `nginx.conf`
-  - Intégration au compose
-  - Branche : `feat/frontend-skeleton`
-
 - [ ] **Étape 8** — Vérification end-to-end Docker Compose
   - `docker compose up --build` → tous les services démarrent en `healthy`
   - Vérification que la gateway route vers chaque service
-  - Vérification Adminer (4 bases + tables Flyway)
+  - Vérification pgAdmin (4 bases + tables Flyway)
   - Premier release : merge `develop` → `main`, tag `v0.1.0`
 
 ### 🔐 Phase Authentification
@@ -171,7 +230,12 @@
 - **Pas de service discovery** (DNS Docker Compose suffit à cette échelle)
 - **Pas de Spring Cloud Config** : `application.yml` + profil `docker` + variables d'environnement `.env`
 
-### Conventions
+### Conventions d'avancement
+- **`TASKS.md` est mis à jour directement sur `develop`** par commits atomiques `docs(tasks): ...` après chaque étape validée (convention simple, pas de mini-branche dédiée).
+- Les branches `feat/*` et `fix/*` sont mergées dans `develop` via `git merge --no-ff` après validation utilisateur, puis supprimées localement et sur le remote.
+- À chaque jalon majeur (ex: fin de l'amorçage Docker, fin de l'auth, etc.) : merge `develop → main` + tag `vX.Y.Z`.
+
+### Conventions de code
 - Java : package `com.loxia.<service>`, DTO séparés des entités, Lombok autorisé, Slf4j pour les logs
 - React : composants fonctionnels uniquement, props typées, TanStack Query pour le fetch serveur, Zustand pour le state client global
 - SQL : `snake_case`, UUID PK, `created_at` / `updated_at`, migrations Flyway `V<n>__<desc>.sql`

@@ -1,0 +1,250 @@
+# =====================================================================
+# Loxia — Docker Compose (local development stack)
+#
+# Services currently wired up:
+#   - loxia-db             : single PostgreSQL 16 container, hosts 4 DBs
+#   - pgadmin              : pgAdmin 4 web UI to inspect the databases
+#   - auth-service         : identity / authentication microservice
+#   - catalog-service      : real-estate listings microservice
+#   - rental-service       : rental applications + lock rule microservice
+#   - notification-service : in-app notifications microservice
+#   - gateway              : Spring Cloud Gateway — single API entry point
+#   - frontend             : React + Vite build served by Nginx
+#
+# Exposed ports on the host:
+#   - 8080 : gateway  (API)
+#   - 3000 : frontend (UI)
+#   - 8090 : pgAdmin  (dev only)
+#
+# The API gateway and the frontend will be added in the next steps
+# and will plug into the same network.
+#
+# Runtime values come from the `.env` file at the repository root
+# (copied from `.env.example`). Defaults are provided as a safety net
+# for `docker compose config` sanity checks.
+# =====================================================================
+
+services:
+  loxia-db:
+    image: postgres:16
+    container_name: loxia-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      # These are consumed by scripts/init-multi-db.sh at first boot.
+      AUTH_DB_NAME: ${AUTH_DB_NAME:-auth_db}
+      CATALOG_DB_NAME: ${CATALOG_DB_NAME:-catalog_db}
+      RENTAL_DB_NAME: ${RENTAL_DB_NAME:-rental_db}
+      NOTIFICATION_DB_NAME: ${NOTIFICATION_DB_NAME:-notification_db}
+    volumes:
+      - loxia-db-data:/var/lib/postgresql/data
+      - ./scripts/init-multi-db.sh:/docker-entrypoint-initdb.d/init-multi-db.sh:ro
+    networks:
+      - loxia-net
+    # Postgres is NOT published on the host. It is only reachable from
+    # inside the Docker network (by pgAdmin today, by the microservices
+    # tomorrow). This mirrors the "only the gateway is exposed" rule.
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  auth-service:
+    build:
+      # Build context is the whole services/ directory so that the
+      # Dockerfile can read both the parent POM and the module POM.
+      context: ./services
+      dockerfile: auth-service/Dockerfile
+    container_name: loxia-auth-service
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      AUTH_DB_NAME: ${AUTH_DB_NAME:-auth_db}
+    networks:
+      - loxia-net
+    # Not exposed on the host: only the gateway will be published.
+    # Other services reach auth-service through the Docker DNS name
+    # `auth-service` on port 8081.
+    expose:
+      - "8081"
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+    healthcheck:
+      # `wget` ships with the alpine base image; no extra install needed.
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  catalog-service:
+    build:
+      context: ./services
+      dockerfile: catalog-service/Dockerfile
+    container_name: loxia-catalog-service
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      CATALOG_DB_NAME: ${CATALOG_DB_NAME:-catalog_db}
+    networks:
+      - loxia-net
+    expose:
+      - "8082"
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  rental-service:
+    build:
+      context: ./services
+      dockerfile: rental-service/Dockerfile
+    container_name: loxia-rental-service
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      RENTAL_DB_NAME: ${RENTAL_DB_NAME:-rental_db}
+    networks:
+      - loxia-net
+    expose:
+      - "8083"
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8083/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  notification-service:
+    build:
+      context: ./services
+      dockerfile: notification-service/Dockerfile
+    container_name: loxia-notification-service
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      NOTIFICATION_DB_NAME: ${NOTIFICATION_DB_NAME:-notification_db}
+    networks:
+      - loxia-net
+    expose:
+      - "8084"
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8084/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  gateway:
+    build:
+      # The gateway has its own standalone pom.xml — build context is
+      # just ./gateway (no need to reference services/).
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: loxia-gateway
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - loxia-net
+    # The gateway is the ONLY service exposed on the host.
+    # All API calls from the outside world go through port 8080.
+    ports:
+      - "8080:8080"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      catalog-service:
+        condition: service_healthy
+      rental-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: loxia-frontend
+    restart: unless-stopped
+    networks:
+      - loxia-net
+    # Exposed on port 3000 on the host (Nginx listens on 80 inside).
+    ports:
+      - "3000:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health | grep -q 'ok' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: loxia-pgadmin
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@loxia.dev}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      # Disable multi-user mode for a smoother local dev experience.
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - loxia-pgadmin-data:/var/lib/pgadmin
+      # Pre-register the loxia-db server so contributors don't have to
+      # add it by hand after each `docker compose down -v`. Password is
+      # still prompted on first connection (pgAdmin does not store it
+      # from servers.json for security reasons).
+      - ./config/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    networks:
+      - loxia-net
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+
+networks:
+  loxia-net:
+    name: loxia-net
+    driver: bridge
+
+volumes:
+  loxia-db-data:
+    name: loxia-db-data
+  loxia-pgadmin-data:
+    name: loxia-pgadmin-data

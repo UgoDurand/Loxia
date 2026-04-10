@@ -134,16 +134,18 @@ Création des bases via `scripts/init-multi-db.sh` exécuté au démarrage du co
 **Docker** pour chaque service (`Dockerfile` multi-stage : build Maven puis JRE slim). **Docker Compose v2** pour l'orchestration locale.
 
 ### Topologie Docker Compose
-| Conteneur               | Image / Build              | Port hôte | Notes                            |
-| ----------------------- | -------------------------- | --------- | -------------------------------- |
-| `loxia-db`              | `postgres:16`              | —         | 4 bases créées par script d'init |
-| `adminer`               | `adminer`                  | 8090      | Dev only                         |
-| `auth-service`          | build local                | —         | Réseau interne uniquement        |
-| `catalog-service`       | build local                | —         | Réseau interne uniquement        |
-| `rental-service`        | build local                | —         | Réseau interne uniquement        |
-| `notification-service`  | build local                | —         | Réseau interne uniquement        |
-| `gateway`               | build local                | **8080**  | Seul service exposé sur l'hôte   |
-| `frontend`              | build local (multi-stage)  | **3000**  | Nginx servant le build React     |
+| Conteneur               | Image / Build              | Port hôte | Statut actuel | Notes                            |
+| ----------------------- | -------------------------- | --------- | ------------- | -------------------------------- |
+| `loxia-db`              | `postgres:16`              | —         | ✅ en place    | 4 bases créées par `scripts/init-multi-db.sh` |
+| `pgadmin`               | `dpage/pgadmin4:8`         | **8090**  | ✅ en place    | Dev only — serveur pré-enregistré via `config/pgadmin/servers.json` |
+| `auth-service`          | build local (Java 21)      | —         | ✅ en place (squelette) | Réseau interne uniquement — port 8081 |
+| `catalog-service`       | build local (Java 21)      | —         | ✅ en place (squelette) | Réseau interne uniquement — port 8082 |
+| `rental-service`        | build local (Java 21)      | —         | ✅ en place (squelette) | Réseau interne uniquement — port 8083 |
+| `notification-service`  | build local (Java 21)      | —         | ✅ en place (squelette) | Réseau interne uniquement — port 8084 |
+| `gateway`               | build local (Java 21)      | **8080**  | ✅ en place (squelette) | Seul service exposé sur l'hôte — port 8080 |
+| `frontend`              | build local (multi-stage)  | **3000**  | ✅ en place (squelette) | Nginx servant le build React — port 3000 |
+
+> **Statut « squelette »** = le service démarre, se connecte à sa base et expose `/actuator/health`. Aucun endpoint métier ni aucune entité JPA n'existent encore. La logique métier sera ajoutée aux étapes suivantes (auth complet, catalog complet, rental complet, notification complet).
 
 ### Healthchecks
 Chaque service Spring Boot expose `/actuator/health`. Docker Compose utilise ces endpoints pour le `HEALTHCHECK` et les `depends_on: condition: service_healthy`.

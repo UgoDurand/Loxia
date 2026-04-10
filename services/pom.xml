@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  =====================================================================
+  Loxia — Maven parent POM
+
+  Shared configuration for all Loxia backend microservices. Each
+  service (auth-service, catalog-service, rental-service,
+  notification-service) inherits from this parent POM and only needs
+  to declare its own dependencies on top of the shared ones.
+
+  Goals of this parent:
+    - Pin Java version and source/target (Java 21 LTS)
+    - Pin Spring Boot version (parent + dependency management)
+    - Pin common libraries (Lombok, springdoc-openapi) in one place
+    - Provide the Spring Boot Maven plugin for every child module
+  =====================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      Inherit from Spring Boot starter parent to get curated dependency
+      versions and sensible Maven plugin defaults out of the box.
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.loxia</groupId>
+    <artifactId>loxia-services-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Loxia — Services Parent</name>
+    <description>Shared Maven parent POM for all Loxia backend microservices.</description>
+
+    <!--
+      Child modules. Each microservice lives in its own Maven module
+      under services/. They all inherit from this parent POM to keep
+      Java version, Spring Boot version and shared plugin config in
+      sync across the whole backend.
+    -->
+    <modules>
+        <module>auth-service</module>
+        <module>catalog-service</module>
+        <module>rental-service</module>
+        <module>notification-service</module>
+    </modules>
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Shared library versions -->
+        <springdoc.version>2.6.0</springdoc.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!--
+              springdoc-openapi is not managed by Spring Boot's BOM,
+              so we pin it here to keep all services in sync.
+            -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <!--
+                          Exclude Lombok from the final fat JAR: it is
+                          only needed at compile time.
+                        -->
+                        <excludes>
+                            <exclude>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                            </exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

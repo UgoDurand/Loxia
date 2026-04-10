@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Loxia DB",
+      "Group": "Servers",
+      "Host": "loxia-db",
+      "Port": 5432,
+      "MaintenanceDB": "postgres",
+      "Username": "postgres",
+      "SSLMode": "prefer"
+    }
+  }
+}

@@ -1,0 +1,59 @@
+# =====================================================================
+# Loxia — auth-service — default configuration
+#
+# This file holds the defaults used when running the service OUTSIDE
+# of Docker (e.g. from IntelliJ / VS Code against a local Postgres).
+# When running inside Docker Compose, application-docker.yml is
+# activated via SPRING_PROFILES_ACTIVE=docker and overrides the
+# datasource URL to use the `loxia-db` service name.
+# =====================================================================
+
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    # Assumes a local Postgres reachable on localhost:5432 with the
+    # auth_db database already created. For day-to-day development
+    # you will almost always use the `docker` profile instead.
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:changeme}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      # Schema is owned by Flyway — never let Hibernate touch it.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Only expose /actuator/health for now. More endpoints will be
+        # opened up later if we need metrics or info.
+        include: health
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.loxia.auth: DEBUG

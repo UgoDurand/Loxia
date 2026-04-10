@@ -164,7 +164,7 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 | API Gateway    | **Spring Cloud Gateway**                                               |
 | Conteneurs     | **Docker** + **Docker Compose v2**                                     |
 | Reverse proxy  | **Nginx** (sert le build React statique)                               |
-| Outil d'admin  | **Adminer** (service Docker dev uniquement, port 8090)                 |
+| Outil d'admin  | **pgAdmin 4** (service Docker dev uniquement, port 8090)               |
 
 ---
 
@@ -184,26 +184,67 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 
 ## Démarrage rapide
 
-> ⚠️ Cette section sera complétée au fur et à mesure de l'avancement du projet. Pour l'instant, le squelette d'infrastructure n'est pas encore en place — voir [`TASKS.md`](TASKS.md) pour l'état actuel.
+> ℹ️ **État actuel** : l'infrastructure Docker complète est en place — les 4 microservices métier, la **gateway** Spring Cloud Gateway et le **frontend** React (page placeholder) tournent tous `healthy`. Les endpoints métier (auth, catalog, rental, notifications) seront implémentés aux étapes suivantes. Voir [`TASKS.md`](TASKS.md) pour le détail.
 
-À terme :
+### 1. Cloner et préparer
 
 ```bash
-# 1. Cloner le dépôt
-git clone git@github.com:<owner>/Loxia.git
+git clone git@github.com:UgoDurand/Loxia.git
 cd Loxia
+git switch develop            # branche d'intégration
+cp .env.example .env          # adapter les secrets si besoin
+```
 
-# 2. Préparer l'environnement
-cp .env.example .env
-# (éditer .env si besoin, en particulier JWT_SECRET)
+### 2. Démarrer la stack
 
-# 3. Démarrer l'ensemble de la stack
-docker compose up --build
+```bash
+docker compose up -d          # lance db + gateway + frontend + 4 services + pgAdmin
+docker compose ps             # tous doivent passer (healthy) en <3 min
+docker compose logs -f        # suivre les logs en direct (optionnel)
+```
 
-# 4. Ouvrir l'application
-# Frontend : http://localhost:3000
-# Gateway  : http://localhost:8080
-# Adminer  : http://localhost:8090
+Au premier build, Docker doit télécharger les dépendances Maven des 5 services (4 microservices + gateway) : compter **5 à 10 minutes**. Les builds suivants sont beaucoup plus rapides grâce au cache Docker layer.
+
+### 3. Vérifier que tout est up
+
+```bash
+# Gateway — seul point d'entrée exposé sur l'hôte (port 8080)
+curl http://localhost:8080/actuator/health
+# → {"status":"UP","groups":["liveness","readiness"]}
+
+# Microservices — accessibles uniquement depuis le réseau Docker interne
+docker compose exec auth-service         wget -qO- http://localhost:8081/actuator/health
+docker compose exec catalog-service      wget -qO- http://localhost:8082/actuator/health
+docker compose exec rental-service       wget -qO- http://localhost:8083/actuator/health
+docker compose exec notification-service wget -qO- http://localhost:8084/actuator/health
+# → chacun doit répondre {"status":"UP","groups":["liveness","readiness"]}
+```
+
+> 🔒 **Les microservices ne sont pas exposés sur l'hôte.** Toutes les requêtes extérieures transitent par la gateway (`http://localhost:8080`). Ne cherche pas à atteindre `http://localhost:8081` directement — c'est voulu.
+
+### 4. pgAdmin (inspection des bases)
+
+Seul service web exposé sur l'hôte actuellement.
+
+- URL : **http://localhost:8090**
+- Login : valeur de `PGADMIN_DEFAULT_EMAIL` dans ton `.env` (défaut `admin@loxia.dev`)
+- Password : valeur de `PGADMIN_DEFAULT_PASSWORD` dans ton `.env` (défaut `admin`)
+- Le serveur **Loxia DB** est pré-enregistré dans l'Object Explorer. Mot de passe Postgres au premier clic : valeur de `POSTGRES_PASSWORD` dans ton `.env` (défaut `changeme`)
+- 4 bases visibles : `auth_db`, `catalog_db`, `rental_db`, `notification_db` — chacune contient déjà sa table `flyway_schema_history` créée automatiquement au démarrage du service correspondant
+
+### 5. Arrêter
+
+```bash
+docker compose down           # stoppe les conteneurs, garde les volumes (données préservées)
+docker compose down -v        # stoppe ET efface les volumes (DB wipée — à utiliser avec précaution)
+```
+
+### 6. Accès aux services exposés
+
+```bash
+# Frontend : http://localhost:3000  ✅ page placeholder Loxia
+# Gateway  : http://localhost:8080  ✅ API entry point
+# pgAdmin  : http://localhost:8090  ✅ dev only
 ```
 
 ---
@@ -243,8 +284,8 @@ Loxia suit un **GitFlow simplifié** à deux branches longues + branches de feat
 
 | Branche                       | Rôle                                                          | Règles                                                                                            |
 | ----------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `main`                        | **Production** — toujours stable, déployable                  | Pas de commit direct. Reçoit uniquement des merges depuis `develop` aux jalons (release).         |
-| `develop`                     | **Intégration** — état courant de l'équipe                    | **Branche par défaut.** Reçoit les merges des branches de feature après validation.                |
+| `main`                        | **Production** — toujours stable, déployable                  | **Branche par défaut du dépôt.** Pas de commit direct. Reçoit uniquement des merges depuis `develop` aux jalons (release). |
+| `develop`                     | **Intégration** — état courant de l'équipe                    | Reçoit les merges des branches de feature après validation. Base des nouvelles branches `feat/*`.   |
 | `feat/<scope>-<short-desc>`   | Développement d'une fonctionnalité                            | Branchée depuis `develop`. Mergée dans `develop` après tests OK. Supprimée après merge.            |
 | `fix/<scope>-<short-desc>`    | Correction d'un bug                                           | Mêmes règles qu'une `feat/`.                                                                       |
 
