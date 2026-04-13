@@ -110,9 +110,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             }
         }
 
-        // GET /api/listings/** is public
+        // GET /api/listings/** is public (except /api/listings/mine which needs auth)
         if (HttpMethod.GET.equals(request.getMethod())
-                && pathMatcher.match(PUBLIC_LISTINGS_PATH, path)) {
+                && pathMatcher.match(PUBLIC_LISTINGS_PATH, path)
+                && !path.equals("/api/listings/mine")) {
             return true;
         }
 
