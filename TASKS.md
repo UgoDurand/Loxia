@@ -22,24 +22,23 @@
 
 - **Étape 1 — Fondations locales** _(2026-04-10)_
   - [x] Création du dossier `docs/mockups/` et déplacement des 16 captures PNG
-  - [x] Création de `.gitignore` (avec `CLAUDE.md` exclu)
+  - [x] Création de `.gitignore`
   - [x] Création de `.dockerignore`
   - [x] Création de `.env.example`
   - [x] Création de `README.md` (vitrine GitHub)
   - [x] Création de `TASKS.md` (ce fichier)
-  - [x] Création de `CLAUDE.md` local (gitignored)
   - [x] Création de `docs/architecture.md` (squelette)
 
 - **Étape 2 — Initialisation git + repo GitHub privé + branches GitFlow** _(2026-04-10)_
   - [x] Préflight : `git` 2.47, `gh` 2.89, `gh auth status` (logged as `UgoDurand`)
-  - [x] `git init -b main` + `git add .` + vérification que `CLAUDE.md` n'est PAS staged
+  - [x] `git init -b main` + `git add .` + commit initial
   - [x] Commit initial sur `main` : `chore: initial project structure and documentation` (`b5c2a98`, 22 fichiers / 919 insertions)
   - [x] Création du repo GitHub **privé** `UgoDurand/Loxia` via `gh repo create`
   - [x] `gh auth setup-git` pour le credential helper, puis `git push -u origin main`
   - [x] Création de la branche `develop` depuis `main` et `git push -u origin develop`
   - [x] `main` conservée comme branche par défaut du dépôt (ajustement GitFlow suite au retour utilisateur)
   - [x] Correction doc sur `develop` : `docs: clarify main is the default branch in gitflow strategy` (`fab0cab`)
-  - [x] Vérifications finales : `CLAUDE.md` et `.env` absents du remote (404 confirmés), repo privé, 2 branches présentes
+  - [x] Vérifications finales : `.env` absent du remote (404 confirmé), repo privé, 2 branches présentes
 
 - **Étape 3 — Docker Compose minimal (PostgreSQL + pgAdmin)** _(2026-04-10)_
   - [x] Branche `feat/infra-postgres-base` créée depuis `develop`
@@ -185,21 +184,37 @@
 
 ## 🚧 In progress
 
-_(rien en cours — prochaine étape = Étape 11 `catalog-service` complet + pages annonces)_
+_(rien en cours — prochaine étape = Étape 12 `rental-service` complet + règle de verrouillage)_
 
 ---
 
+- **Étape 11** — `catalog-service` complet + pages frontend annonces _(2026-04-13)_
+  - [x] Migration Flyway `V1__create_listings_table.sql` (table `listings` avec 12 colonnes + 3 indexes)
+  - [x] Entité JPA `Listing` + `StringListConverter` (photo_urls stockées en TEXT avec séparateur `|||`)
+  - [x] Repository `ListingRepository` + `ListingSpecifications` (filtres dynamiques : ville, type de bien, prix min/max)
+  - [x] DTOs : `CreateListingRequest`, `UpdateListingRequest`, `ListingResponse`, `ListingSummaryResponse`
+  - [x] `RestClientConfig` : deux `RestClient` beans (auth + rental) avec timeout 3s
+  - [x] `AuthClientService` : enrichissement du nom du propriétaire via `/internal/users/{id}` (graceful degradation)
+  - [x] `RentalClientService` : vérification du verrouillage via `/internal/applications/listing/{id}/locked` (fail-safe : bloque si rental-service indisponible)
+  - [x] `ListingService` : CRUD complet avec vérification ownership + lock + enrichissement owner name
+  - [x] `ListingController` : 6 endpoints (search, mine, getById, create, update, delete) avec contrainte regex UUID sur `/{id}` pour éviter le conflit avec `/mine`
+  - [x] Tests unitaires `ListingServiceTest` : 7 cas (create, update reject non-owner, update reject locked, delete reject non-owner, delete reject locked, getById, getMyListings)
+  - [x] Gateway `JwtAuthenticationFilter` : exclusion de `/api/listings/mine` du whitelist public pour propager `X-User-Id`
+  - [x] `docker-compose.yml` : ajout `AUTH_SERVICE_URL` et `RENTAL_SERVICE_URL` pour catalog-service
+  - [x] `application.yml` / `application-docker.yml` : config URLs inter-services
+  - [x] Frontend `listingsApi.ts` : couche API typée (search, getById, getMine, create, update, delete)
+  - [x] Frontend `roleStore.ts` : store Zustand persisté pour toggle Locataire/Propriétaire
+  - [x] Frontend `Header.tsx` : header avec logo, toggle rôle (avec navigation vers `/`), zone auth
+  - [x] Frontend `Layout.tsx` : wrapper Header + contenu
+  - [x] Frontend `ListingCard.tsx` : carte résumé d'annonce
+  - [x] Frontend `HomePage.tsx` : double vue (locataire : hero + recherche + grille ; propriétaire : hero + CTA + liste)
+  - [x] Frontend `ListingDetailPage.tsx` : détail annonce avec photo, nom propriétaire, CTA contextuel
+  - [x] Frontend `ListingFormPage.tsx` : formulaire création/édition (react-hook-form + Zod), gestion photos simulées
+  - [x] Frontend `MyListingsPage.tsx` : liste des annonces du propriétaire avec actions edit/delete
+  - [x] Frontend `App.tsx` : routes protégées (listings/new, listings/:id/edit, my-listings)
+  - [x] Branche : `feat/catalog-listings-crud-and-pages`
+
 ## ⏳ Backlog
-
-### 📚 Phase Catalogue
-
-- [ ] **Étape 11** — `catalog-service` complet + pages frontend annonces
-  - CRUD `Listing` (création, modification, suppression, recherche avec filtres)
-  - Enrichissement owner via appel interne à `auth-service`
-  - Migration Flyway
-  - Pages front : `ListingsSearchPage`, `ListingDetailPage`, `ListingFormPage`, `MyListingsPage`
-  - Toggle Locataire/Propriétaire dans le header (Zustand)
-  - Branche : `feat/catalog-listings-crud-and-pages`
 
 ### 📋 Phase Candidatures
 
@@ -265,7 +280,7 @@ _(rien en cours — prochaine étape = Étape 11 `catalog-service` complet + pag
 - React : composants fonctionnels uniquement, props typées, TanStack Query pour le fetch serveur, Zustand pour le state client global
 - SQL : `snake_case`, UUID PK, `created_at` / `updated_at`, migrations Flyway `V<n>__<desc>.sql`
 - Git : Conventional Commits en anglais, branches `feat/<scope>-<desc>`, GitFlow simplifié (`main` / `develop` / branches feature)
-- **Aucune mention d'IA / Claude / assistant dans les commits, PR, code review, commentaires de code**
+- **Aucune mention d'IA / assistant dans les commits, PR, code review, commentaires de code**
 
 ### Dette technique connue / à documenter dans le rapport
 - **Race condition sur la règle de lock** : entre la vérification dans `catalog-service` et l'UPDATE, une candidature peut arriver. Acceptée pour le projet ; en production on ajouterait un verrou applicatif ou un événement compensatoire.

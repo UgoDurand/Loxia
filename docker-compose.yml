@@ -97,6 +97,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
       CATALOG_DB_NAME: ${CATALOG_DB_NAME:-catalog_db}
+      AUTH_SERVICE_URL: http://auth-service:8081
+      RENTAL_SERVICE_URL: http://rental-service:8083
     networks:
       - loxia-net
     expose:

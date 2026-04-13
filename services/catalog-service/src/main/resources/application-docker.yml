@@ -11,3 +11,7 @@ spring:
     url: jdbc:postgresql://loxia-db:5432/${CATALOG_DB_NAME:catalog_db}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:changeme}
+
+services:
+  auth-url: ${AUTH_SERVICE_URL:http://auth-service:8081}
+  rental-url: ${RENTAL_SERVICE_URL:http://rental-service:8083}
