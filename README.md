@@ -184,7 +184,7 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 
 ## Démarrage rapide
 
-> ℹ️ **État actuel** : l'infrastructure Docker complète est en place et l'authentification est fonctionnelle — les 4 microservices, la **gateway** (validation JWT, propagation `X-User-*`) et le **frontend** React (pages Login / Register, store Zustand, intercepteur Axios) tournent tous `healthy`. Les endpoints catalogue, candidatures et notifications seront implémentés aux étapes suivantes. Voir [`TASKS.md`](TASKS.md) pour le détail.
+> ℹ️ **État actuel** : l'authentification et le catalogue sont fonctionnels — les 4 microservices, la **gateway** (validation JWT, propagation `X-User-*`) et le **frontend** React tournent tous `healthy`. Le frontend propose les pages Login/Register, le toggle Locataire/Propriétaire, la recherche d'annonces avec filtres, la création/modification/suppression d'annonces, et les pages de détail. Les candidatures et notifications seront implémentées aux étapes suivantes. Voir [`TASKS.md`](TASKS.md) pour le détail.
 
 ### 1. Cloner et préparer
 
@@ -242,7 +242,7 @@ docker compose down -v        # stoppe ET efface les volumes (DB wipée — à u
 ### 6. Accès aux services exposés
 
 ```bash
-# Frontend : http://localhost:3000  ✅ Login, Register, accueil
+# Frontend : http://localhost:3000  ✅ Login, Register, accueil, annonces, détail, création
 # Gateway  : http://localhost:8080  ✅ API entry point
 # pgAdmin  : http://localhost:8090  ✅ dev only
 ```
@@ -273,8 +273,6 @@ Loxia/
 ├── TASKS.md                  # Suivi d'avancement (à jour)
 └── README.md                 # Ce fichier
 ```
-
-> Le fichier `CLAUDE.md` éventuellement présent à la racine d'une copie locale est **personnel** : il est listé dans `.gitignore` et ne doit jamais être committé.
 
 ---
 
