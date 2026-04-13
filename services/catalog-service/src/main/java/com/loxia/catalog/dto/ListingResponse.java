@@ -1,0 +1,50 @@
+package com.loxia.catalog.dto;
+
+import com.loxia.catalog.domain.Listing;
+import lombok.Builder;
+import lombok.Data;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Data
+@Builder
+public class ListingResponse {
+
+    private UUID id;
+    private String title;
+    private String description;
+    private String propertyType;
+    private String city;
+    private Integer price;
+    private Integer surface;
+    private Integer rooms;
+    private List<String> photoUrls;
+    private UUID ownerId;
+    private String ownerName;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
+
+    public static ListingResponse from(Listing listing) {
+        return from(listing, null);
+    }
+
+    public static ListingResponse from(Listing listing, String ownerName) {
+        return ListingResponse.builder()
+                .id(listing.getId())
+                .title(listing.getTitle())
+                .description(listing.getDescription())
+                .propertyType(listing.getPropertyType())
+                .city(listing.getCity())
+                .price(listing.getPrice())
+                .surface(listing.getSurface())
+                .rooms(listing.getRooms())
+                .photoUrls(listing.getPhotoUrls())
+                .ownerId(listing.getOwnerId())
+                .ownerName(ownerName)
+                .createdAt(listing.getCreatedAt())
+                .updatedAt(listing.getUpdatedAt())
+                .build();
+    }
+}
