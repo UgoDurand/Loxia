@@ -1,15 +1,18 @@
 import { useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Home } from 'lucide-react'
+import { toast } from 'sonner'
 import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { listingsApi } from '@/api/listingsApi'
 import { applicationsApi } from '@/api/applicationsApi'
 import Layout from '@/components/Layout'
+import Loader from '@/components/Loader'
+import EmptyState from '@/components/EmptyState'
 
 const EMPLOYMENT_OPTIONS = [
   { value: 'CDI', label: 'CDI' },
@@ -61,6 +64,7 @@ function ApplyPage() {
         message: data.message || undefined,
       }),
     onSuccess: () => {
+      toast.success('Candidature envoyée.')
       navigate('/my-applications')
     },
     onError: (err: unknown) => {
@@ -68,6 +72,7 @@ function ApplyPage() {
         ? (err.response?.data?.message ?? err.response?.data?.error ?? 'Erreur inconnue')
         : 'Erreur inconnue'
       setError('root', { message: msg })
+      toast.error(msg)
     },
   })
 
@@ -75,7 +80,7 @@ function ApplyPage() {
     return (
       <Layout>
         <div className="max-w-xl mx-auto px-4 py-8">
-          <p className="text-gray-500">Chargement...</p>
+          <Loader />
         </div>
       </Layout>
     )
@@ -85,10 +90,13 @@ function ApplyPage() {
     return (
       <Layout>
         <div className="max-w-xl mx-auto px-4 py-8">
-          <p className="text-red-500">Annonce introuvable.</p>
-          <Link to="/" className="text-indigo-600 hover:underline text-sm mt-2 inline-block">
-            Retour à l'accueil
-          </Link>
+          <EmptyState
+            icon={Home}
+            title="Annonce introuvable"
+            description="Cette annonce n'est plus disponible."
+            actionLabel="Retour à l'accueil"
+            actionTo="/"
+          />
         </div>
       </Layout>
     )

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'sonner'
 import { useAuthStore } from '@/store/authStore'
 import HomePage from '@/pages/HomePage'
 import LoginPage from '@/pages/LoginPage'
@@ -10,6 +11,7 @@ import MyListingsPage from '@/pages/MyListingsPage'
 import ApplyPage from '@/pages/ApplyPage'
 import MyApplicationsPage from '@/pages/MyApplicationsPage'
 import ReceivedApplicationsPage from '@/pages/ReceivedApplicationsPage'
+import SettingsPage from '@/pages/SettingsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,8 +103,17 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
+      <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   )
 }

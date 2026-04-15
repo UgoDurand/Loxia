@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, MapPin, Lock } from 'lucide-react'
+import { Plus, Pencil, Trash2, MapPin, Lock, Building2 } from 'lucide-react'
+import { toast } from 'sonner'
+import axios from 'axios'
 import { listingsApi, type ListingSummary } from '@/api/listingsApi'
 import Layout from '@/components/Layout'
+import Loader from '@/components/Loader'
+import EmptyState from '@/components/EmptyState'
 
 const PLACEHOLDER_IMG =
   'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=250&fit=crop'
@@ -20,6 +24,14 @@ function MyListingsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-listings'] })
       queryClient.invalidateQueries({ queryKey: ['listings'] })
+      toast.success('Annonce supprimée.')
+    },
+    onError: (err: unknown) => {
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        toast.error('Annonce verrouillée : une candidature est en cours.')
+        return
+      }
+      toast.error('Impossible de supprimer cette annonce.')
     },
   })
 
@@ -38,18 +50,15 @@ function MyListingsPage() {
         </div>
 
         {isLoading ? (
-          <p className="text-gray-500 text-sm">Chargement...</p>
+          <Loader />
         ) : listings.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <p className="text-gray-500 mb-3">Vous n'avez pas encore d'annonce.</p>
-            <Link
-              to="/listings/new"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Ajouter un bien
-            </Link>
-          </div>
+          <EmptyState
+            icon={Building2}
+            title="Aucune annonce pour le moment"
+            description="Publiez votre première annonce et commencez à recevoir des candidatures."
+            actionLabel="Ajouter un bien"
+            actionTo="/listings/new"
+          />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {listings.map((listing) => (

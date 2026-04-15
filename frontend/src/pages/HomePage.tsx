@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, MapPin, Home, Plus } from 'lucide-react'
+import { Search, MapPin, Home, Plus, Building2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { listingsApi } from '@/api/listingsApi'
@@ -8,6 +8,8 @@ import { useAuthStore } from '@/store/authStore'
 import { useRoleStore } from '@/store/roleStore'
 import Layout from '@/components/Layout'
 import ListingCard from '@/components/ListingCard'
+import Loader from '@/components/Loader'
+import EmptyState from '@/components/EmptyState'
 
 function HomePage() {
   const { isAuthenticated } = useAuthStore()
@@ -74,21 +76,13 @@ function HomePage() {
         <div className="max-w-4xl mx-auto px-4 py-8">
           <h2 className="text-xl font-semibold mb-4">Vos annonces actives</h2>
           {!isAuthenticated ? (
-            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-              <div className="text-gray-400 mb-2">
-                <Home className="h-10 w-10 mx-auto" />
-              </div>
-              <h3 className="font-semibold mb-1">Espace sécurisé</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Vous devez être connecté pour gérer vos annonces.
-              </p>
-              <Link
-                to="/login"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              >
-                Se connecter
-              </Link>
-            </div>
+            <EmptyState
+              icon={Home}
+              title="Espace sécurisé"
+              description="Vous devez être connecté pour gérer vos annonces."
+              actionLabel="Se connecter"
+              actionTo="/login"
+            />
           ) : (
             <OwnerListings />
           )}
@@ -157,11 +151,13 @@ function HomePage() {
         </h2>
 
         {isLoading ? (
-          <p className="text-gray-500 text-sm">Chargement...</p>
+          <Loader />
         ) : listings.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <p className="text-gray-500">Aucune annonce trouvée.</p>
-          </div>
+          <EmptyState
+            icon={Search}
+            title="Aucune annonce trouvée"
+            description="Essayez d'ajuster vos filtres de recherche pour découvrir plus d'offres."
+          />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {listings.map((listing) => (
@@ -180,20 +176,17 @@ function OwnerListings() {
     queryFn: listingsApi.getMine,
   })
 
-  if (isLoading) return <p className="text-gray-500 text-sm">Chargement...</p>
+  if (isLoading) return <Loader />
 
   if (listings.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-        <p className="text-gray-500 mb-3">Vous n'avez pas encore d'annonce.</p>
-        <Link
-          to="/listings/new"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Ajouter un bien
-        </Link>
-      </div>
+      <EmptyState
+        icon={Building2}
+        title="Aucune annonce pour le moment"
+        description="Créez votre première annonce et commencez à recevoir des candidatures."
+        actionLabel="Ajouter un bien"
+        actionTo="/listings/new"
+      />
     )
   }
 

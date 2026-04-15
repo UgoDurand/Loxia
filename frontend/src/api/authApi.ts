@@ -39,4 +39,7 @@ export const authApi = {
     axiosInstance.post('/api/auth/logout', { refreshToken }),
 
   getMe: () => axiosInstance.get<UserData>('/api/auth/me').then((r) => r.data),
+
+  updateMe: (data: { fullName: string; email: string }) =>
+    axiosInstance.put<UserData>('/api/auth/me', data).then((r) => r.data),
 }
