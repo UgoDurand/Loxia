@@ -294,12 +294,13 @@ _(rien en cours — prochaine étape = Étape 15 tests + seed + préparation dé
   - Vérification du parcours utilisateur complet (cf. `README.md` section démo)
   - Branche : `chore/tests-and-demo-seed`
 
-- [ ] **Étape 16** — Documentation finale et rapport
+- [ ] **Étape 16** — Documentation finale (README + doc technique)
   - Compléter `docs/architecture.md` (vue d'ensemble, ADRs, schémas C4, séquences UML)
-  - Rapport pédagogique pour le prof (structuré selon les livrables exigés)
-  - Mise à jour finale du `README.md` (démarrage rapide complet, parcours de démo)
+  - Refonte complète du `README.md` : pitch, stack, architecture, démarrage rapide, parcours de démo
+  - Ajouter section **Équipe** au README avec les 6 membres : Ugo Durand, Jonas Obrun, Nicolas Ramirez, Cyril Grosjean, Ibrahim Khan, Tarek El Missiry
   - Tag de release `v1.0.0`
-  - Branche : `docs/final-architecture-and-report`
+  - Branche : `docs/final-readme-and-architecture`
+  - _(pas de rapport écrit — seulement README + doc technique)_
 
 ---
 
