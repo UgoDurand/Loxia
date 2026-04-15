@@ -5,9 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Home, Pencil, Camera, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
+import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { listingsApi } from '@/api/listingsApi'
 import Layout from '@/components/Layout'
+import Loader from '@/components/Loader'
 
 const schema = z.object({
   title: z.string().min(1, "Titre requis").max(255),
@@ -76,10 +79,13 @@ function ListingFormPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listings'] })
       queryClient.invalidateQueries({ queryKey: ['my-listings'] })
+      toast.success('Annonce publiée.')
       navigate('/my-listings')
     },
     onError: () => {
-      setError('root', { message: 'Une erreur est survenue.' })
+      const msg = 'Une erreur est survenue.'
+      setError('root', { message: msg })
+      toast.error(msg)
     },
   })
 
@@ -90,18 +96,17 @@ function ListingFormPage() {
       queryClient.invalidateQueries({ queryKey: ['listings'] })
       queryClient.invalidateQueries({ queryKey: ['my-listings'] })
       queryClient.invalidateQueries({ queryKey: ['listing', id] })
+      toast.success('Annonce mise à jour.')
       navigate(`/listings/${id}`)
     },
-    onError: (_err: unknown) => {
-      const status = (_err as { response?: { status: number } })?.response?.status
-      if (status === 409) {
-        setError('root', {
-          message:
-            "Cette annonce a des candidatures en cours et ne peut pas être modifiée.",
-        })
-      } else {
-        setError('root', { message: 'Une erreur est survenue.' })
-      }
+    onError: (err: unknown) => {
+      const status = axios.isAxiosError(err) ? err.response?.status : undefined
+      const msg =
+        status === 409
+          ? 'Cette annonce a des candidatures en cours et ne peut pas être modifiée.'
+          : 'Une erreur est survenue.'
+      setError('root', { message: msg })
+      toast.error(msg)
     },
   })
 
@@ -110,18 +115,17 @@ function ListingFormPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listings'] })
       queryClient.invalidateQueries({ queryKey: ['my-listings'] })
+      toast.success('Annonce supprimée.')
       navigate('/my-listings')
     },
-    onError: (_err: unknown) => {
-      const status = (_err as { response?: { status: number } })?.response?.status
-      if (status === 409) {
-        setError('root', {
-          message:
-            "Cette annonce a des candidatures en cours et ne peut pas être supprimée.",
-        })
-      } else {
-        setError('root', { message: 'Erreur lors de la suppression.' })
-      }
+    onError: (err: unknown) => {
+      const status = axios.isAxiosError(err) ? err.response?.status : undefined
+      const msg =
+        status === 409
+          ? 'Cette annonce a des candidatures en cours et ne peut pas être supprimée.'
+          : 'Erreur lors de la suppression.'
+      setError('root', { message: msg })
+      toast.error(msg)
     },
   })
 
@@ -148,7 +152,7 @@ function ListingFormPage() {
     return (
       <Layout>
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <p className="text-gray-500">Chargement...</p>
+          <Loader />
         </div>
       </Layout>
     )

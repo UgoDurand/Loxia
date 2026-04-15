@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { MapPin, Clock } from 'lucide-react'
+import { MapPin, Clock, FileText } from 'lucide-react'
 import { applicationsApi, type Application, type ApplicationStatus } from '@/api/applicationsApi'
 import Layout from '@/components/Layout'
+import Loader from '@/components/Loader'
+import EmptyState from '@/components/EmptyState'
 
 const STATUS_STYLES: Record<ApplicationStatus, { label: string; classes: string }> = {
   PENDING: { label: 'En attente', classes: 'bg-amber-100 text-amber-800' },
@@ -22,17 +24,15 @@ function MyApplicationsPage() {
         <h1 className="text-xl font-bold mb-6">Mes candidatures</h1>
 
         {isLoading ? (
-          <p className="text-gray-500 text-sm">Chargement...</p>
+          <Loader />
         ) : applications.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <p className="text-gray-500 mb-3">Vous n'avez pas encore postulé à une annonce.</p>
-            <Link
-              to="/"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-block"
-            >
-              Parcourir les annonces
-            </Link>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="Aucune candidature envoyée"
+            description="Parcourez les annonces et déposez votre première candidature en quelques clics."
+            actionLabel="Parcourir les annonces"
+            actionTo="/"
+          />
         ) : (
           <div className="space-y-4">
             {applications.map((app) => (

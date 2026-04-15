@@ -1,9 +1,11 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, MapPin, Maximize2, BedDouble, User, Lock } from 'lucide-react'
+import { ArrowLeft, MapPin, Maximize2, BedDouble, User, Lock, Home } from 'lucide-react'
 import { listingsApi } from '@/api/listingsApi'
 import { useAuthStore } from '@/store/authStore'
 import Layout from '@/components/Layout'
+import Loader from '@/components/Loader'
+import EmptyState from '@/components/EmptyState'
 
 const PLACEHOLDER_IMG =
   'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=500&fit=crop'
@@ -23,7 +25,7 @@ function ListingDetailPage() {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <p className="text-gray-500">Chargement...</p>
+          <Loader />
         </div>
       </Layout>
     )
@@ -33,10 +35,13 @@ function ListingDetailPage() {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <p className="text-red-500">Annonce introuvable.</p>
-          <Link to="/" className="text-indigo-600 hover:underline text-sm mt-2 inline-block">
-            Retour
-          </Link>
+          <EmptyState
+            icon={Home}
+            title="Annonce introuvable"
+            description="Cette annonce n'existe plus ou a été retirée par son propriétaire."
+            actionLabel="Retour à l'accueil"
+            actionTo="/"
+          />
         </div>
       </Layout>
     )

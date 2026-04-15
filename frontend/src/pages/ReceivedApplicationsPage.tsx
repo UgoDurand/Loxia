@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { MapPin, Clock, Check, X, Mail } from 'lucide-react'
+import { MapPin, Clock, Check, X, Mail, Inbox } from 'lucide-react'
+import { toast } from 'sonner'
 import { applicationsApi, type Application, type ApplicationStatus } from '@/api/applicationsApi'
 import Layout from '@/components/Layout'
+import Loader from '@/components/Loader'
+import EmptyState from '@/components/EmptyState'
 
 const STATUS_STYLES: Record<ApplicationStatus, { label: string; classes: string }> = {
   PENDING: { label: 'En attente', classes: 'bg-amber-100 text-amber-800' },
@@ -22,13 +25,13 @@ function ReceivedApplicationsPage() {
         <h1 className="text-xl font-bold mb-6">Candidatures reçues</h1>
 
         {isLoading ? (
-          <p className="text-gray-500 text-sm">Chargement...</p>
+          <Loader />
         ) : applications.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <p className="text-gray-500">
-              Vous n'avez pas encore reçu de candidature sur vos annonces.
-            </p>
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title="Aucune candidature reçue"
+            description="Vos annonces n'ont pas encore attiré de candidats. Revenez un peu plus tard."
+          />
         ) : (
           <div className="space-y-4">
             {applications.map((app) => (
@@ -58,12 +61,20 @@ function ReceivedApplicationCard({ application }: { application: Application }) 
 
   const acceptMutation = useMutation({
     mutationFn: () => applicationsApi.accept(application.id),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate()
+      toast.success('Candidature acceptée.')
+    },
+    onError: () => toast.error("Impossible d'accepter la candidature."),
   })
 
   const rejectMutation = useMutation({
     mutationFn: () => applicationsApi.reject(application.id),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate()
+      toast.success('Candidature refusée.')
+    },
+    onError: () => toast.error('Impossible de refuser la candidature.'),
   })
 
   const isPending = application.status === 'PENDING'
