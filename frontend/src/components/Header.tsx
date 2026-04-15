@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Home, Search, Building2, LogOut, User, FileText, Inbox } from 'lucide-react'
+import { Home, Search, Building2, LogOut, User } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/store/authStore'
 import { useRoleStore } from '@/store/roleStore'
@@ -9,6 +10,7 @@ import { cn } from '@/lib/utils'
 
 function Header() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { user, isAuthenticated, refreshToken, clearAuth } = useAuthStore()
   const { role, setRole } = useRoleStore()
 
@@ -21,6 +23,9 @@ function Header() {
       }
     }
     clearAuth()
+    // Drop any cached data tied to the previous user so the next login
+    // doesn't briefly see stale "me", listings, applications, notifications…
+    queryClient.clear()
     navigate('/login')
   }
 
@@ -67,25 +72,6 @@ function Header() {
         <div className="flex items-center gap-3">
           {isAuthenticated && user ? (
             <>
-              {role === 'tenant' ? (
-                <Link
-                  to="/my-applications"
-                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-indigo-600 transition-colors"
-                  title="Mes candidatures"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  Candidatures
-                </Link>
-              ) : (
-                <Link
-                  to="/received-applications"
-                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-indigo-600 transition-colors"
-                  title="Candidatures reçues"
-                >
-                  <Inbox className="h-3.5 w-3.5" />
-                  Candidatures reçues
-                </Link>
-              )}
               <NotificationBell />
               <Link
                 to="/profile"

@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { MapPin, Clock, Check, X, Mail, Inbox } from 'lucide-react'
 import { toast } from 'sonner'
 import { applicationsApi, type Application, type ApplicationStatus } from '@/api/applicationsApi'
-import Layout from '@/components/Layout'
 import Loader from '@/components/Loader'
 import EmptyState from '@/components/EmptyState'
 
@@ -20,27 +19,25 @@ function ReceivedApplicationsPage() {
   })
 
   return (
-    <Layout>
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-xl font-bold mb-6">Candidatures reçues</h1>
+    <div>
+      <h1 className="text-xl font-bold mb-6">Candidatures reçues</h1>
 
-        {isLoading ? (
-          <Loader />
-        ) : applications.length === 0 ? (
-          <EmptyState
-            icon={Inbox}
-            title="Aucune candidature reçue"
-            description="Vos annonces n'ont pas encore attiré de candidats. Revenez un peu plus tard."
-          />
-        ) : (
-          <div className="space-y-4">
-            {applications.map((app) => (
-              <ReceivedApplicationCard key={app.id} application={app} />
-            ))}
-          </div>
-        )}
-      </div>
-    </Layout>
+      {isLoading ? (
+        <Loader />
+      ) : applications.length === 0 ? (
+        <EmptyState
+          icon={Inbox}
+          title="Aucune candidature reçue"
+          description="Vos annonces n'ont pas encore attiré de candidats. Revenez un peu plus tard."
+        />
+      ) : (
+        <div className="space-y-4">
+          {applications.map((app) => (
+            <ReceivedApplicationCard key={app.id} application={app} />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 

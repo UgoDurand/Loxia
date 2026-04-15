@@ -65,7 +65,7 @@ function ApplyPage() {
       }),
     onSuccess: () => {
       toast.success('Candidature envoyée.')
-      navigate('/my-applications')
+      navigate('/profile/applications')
     },
     onError: (err: unknown) => {
       const msg = axios.isAxiosError(err)
