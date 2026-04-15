@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, MapPin } from 'lucide-react'
+import { Plus, Pencil, Trash2, MapPin, Lock } from 'lucide-react'
 import { listingsApi, type ListingSummary } from '@/api/listingsApi'
 import Layout from '@/components/Layout'
 
@@ -80,6 +80,7 @@ function MyListingCard({
   onDelete: () => void
   isDeleting: boolean
 }) {
+  const locked = listing.locked
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
       <Link to={`/listings/${listing.id}`}>
@@ -95,6 +96,12 @@ function MyListingCard({
           <span className="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-medium px-2 py-0.5 rounded">
             {listing.propertyType}
           </span>
+          {locked && (
+            <span className="absolute top-2 right-2 flex items-center gap-1 bg-amber-500 text-white text-xs font-medium px-2 py-0.5 rounded">
+              <Lock className="h-3 w-3" />
+              Non modifiable
+            </span>
+          )}
         </div>
       </Link>
 
@@ -123,17 +130,28 @@ function MyListingCard({
         </div>
 
         <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-          <Link
-            to={`/listings/${listing.id}/edit`}
-            className="flex items-center gap-1 text-xs text-gray-600 hover:text-indigo-600 transition-colors"
-          >
-            <Pencil className="h-3 w-3" />
-            Éditer
-          </Link>
+          {locked ? (
+            <span
+              className="flex items-center gap-1 text-xs text-gray-400 cursor-not-allowed"
+              title="Cette annonce a une candidature en cours"
+            >
+              <Pencil className="h-3 w-3" />
+              Éditer
+            </span>
+          ) : (
+            <Link
+              to={`/listings/${listing.id}/edit`}
+              className="flex items-center gap-1 text-xs text-gray-600 hover:text-indigo-600 transition-colors"
+            >
+              <Pencil className="h-3 w-3" />
+              Éditer
+            </Link>
+          )}
           <button
             onClick={onDelete}
-            disabled={isDeleting}
-            className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 transition-colors ml-auto"
+            disabled={isDeleting || locked}
+            title={locked ? 'Cette annonce a une candidature en cours' : undefined}
+            className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 transition-colors ml-auto disabled:text-gray-400 disabled:hover:text-gray-400 disabled:cursor-not-allowed"
           >
             <Trash2 className="h-3 w-3" />
             Supprimer

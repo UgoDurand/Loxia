@@ -23,14 +23,19 @@ public class ListingResponse {
     private List<String> photoUrls;
     private UUID ownerId;
     private String ownerName;
+    private boolean locked;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 
     public static ListingResponse from(Listing listing) {
-        return from(listing, null);
+        return from(listing, null, false);
     }
 
     public static ListingResponse from(Listing listing, String ownerName) {
+        return from(listing, ownerName, false);
+    }
+
+    public static ListingResponse from(Listing listing, String ownerName, boolean locked) {
         return ListingResponse.builder()
                 .id(listing.getId())
                 .title(listing.getTitle())
@@ -43,6 +48,7 @@ public class ListingResponse {
                 .photoUrls(listing.getPhotoUrls())
                 .ownerId(listing.getOwnerId())
                 .ownerName(ownerName)
+                .locked(locked)
                 .createdAt(listing.getCreatedAt())
                 .updatedAt(listing.getUpdatedAt())
                 .build();

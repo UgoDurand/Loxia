@@ -10,6 +10,7 @@ export interface ListingSummary {
   rooms: number
   photoUrl: string | null
   ownerId: string
+  locked: boolean
 }
 
 export interface ListingDetail {
@@ -24,6 +25,7 @@ export interface ListingDetail {
   photoUrls: string[]
   ownerId: string
   ownerName: string | null
+  locked: boolean
   createdAt: string
   updatedAt: string
 }

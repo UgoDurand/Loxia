@@ -2,8 +2,8 @@
 # Loxia — rental-service — Docker profile
 #
 # Activated by SPRING_PROFILES_ACTIVE=docker in docker-compose.yml.
-# Only overrides the JDBC URL so the service reaches the database
-# through the Docker DNS name `loxia-db`.
+# Overrides the JDBC URL and the inter-service base URLs so rental
+# reaches its peers through the Docker DNS names.
 # =====================================================================
 
 spring:
@@ -11,3 +11,7 @@ spring:
     url: jdbc:postgresql://loxia-db:5432/${RENTAL_DB_NAME:rental_db}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:changeme}
+
+services:
+  auth-url: ${AUTH_SERVICE_URL:http://auth-service:8081}
+  catalog-url: ${CATALOG_SERVICE_URL:http://catalog-service:8082}

@@ -20,8 +20,13 @@ public class ListingSummaryResponse {
     private Integer rooms;
     private String photoUrl;
     private UUID ownerId;
+    private boolean locked;
 
     public static ListingSummaryResponse from(Listing listing) {
+        return from(listing, false);
+    }
+
+    public static ListingSummaryResponse from(Listing listing, boolean locked) {
         List<String> photos = listing.getPhotoUrls();
         String firstPhoto = (photos != null && !photos.isEmpty()) ? photos.get(0) : null;
 
@@ -35,6 +40,7 @@ public class ListingSummaryResponse {
                 .rooms(listing.getRooms())
                 .photoUrl(firstPhoto)
                 .ownerId(listing.getOwnerId())
+                .locked(locked)
                 .build();
     }
 }

@@ -184,7 +184,42 @@
 
 ## 🚧 In progress
 
-_(rien en cours — prochaine étape = Étape 12 `rental-service` complet + règle de verrouillage)_
+_(rien en cours — prochaine étape = Étape 13 `notification-service` + cloche front)_
+
+---
+
+- **Étape 12** — `rental-service` complet + règle de verrouillage + pages frontend _(2026-04-15)_
+  - [x] Branche `feat/rental-applications-and-lock-rule` créée depuis `develop`
+  - [x] Migration Flyway `V1__create_applications_table.sql` (table `applications`, 10 colonnes + 3 indexes sur listing/applicant/status)
+  - [x] Enum `ApplicationStatus` (PENDING / ACCEPTED / REJECTED) + entité JPA `Application` (`@PrePersist` default PENDING, `@PreUpdate`)
+  - [x] `ApplicationRepository` : 4 finders dérivés + `findLockedListingIds` en JPQL (`select distinct a.listingId ... where status in (PENDING, ACCEPTED)`)
+  - [x] DTOs d'entrée/sortie : `CreateApplicationRequest` (Bean Validation), `ApplicationResponse` (avec enrichissement listing + applicant), `LockStatusResponse`, `BatchLockRequest`, `BatchLockResponse`
+  - [x] `RestClientConfig` : deux `RestClient` beans (auth + catalog) avec timeout 3s (connect + read)
+  - [x] `CatalogClientService` : `getListing(UUID)` + `getListingIdsByOwner(UUID)` via `/internal/listings/**` (graceful degradation)
+  - [x] `AuthClientService` : `getUser(UUID)` via `/internal/users/{id}` (graceful degradation)
+  - [x] `ApplicationService` : create (reject own-listing 400, duplicate 409), `getMyApplications`, `getReceivedApplications` (via catalog owner lookup), transitions accept/reject (404/403/409) avec cache en mémoire des listings/users pour dédupliquer les RestClient calls
+  - [x] `LockService` : `isListingLocked(UUID)` + `getLockStatuses(List<UUID>)` avec dedup et map complète pour chaque id demandé
+  - [x] `ApplicationController` : 5 endpoints publics (`POST /api/applications`, `GET /mine`, `GET /received`, `POST /{id}/accept|reject`) avec `@RequestHeader("X-User-Id")`
+  - [x] `InternalApplicationController` : `GET /internal/applications/listing/{id}/locked` + `POST /internal/applications/locks` (batch)
+  - [x] `InternalListingController` côté catalog-service (`GET /internal/listings/{id}` + `GET /internal/listings/owner/{ownerId}`) pour que rental-service puisse enrichir et lister les annonces d'un propriétaire
+  - [x] `application.yml` / `application-docker.yml` : `services.auth-url` + `services.catalog-url` branchés sur env vars (`AUTH_SERVICE_URL`, `CATALOG_SERVICE_URL`)
+  - [x] `docker-compose.yml` : env `AUTH_SERVICE_URL` + `CATALOG_SERVICE_URL` pour rental-service
+  - [x] Fix critique infra : `scripts/init-multi-db.sh` marqué exécutable en git (mode 100755) — sinon Postgres tente de l'exécuter et échoue silencieusement, laissant les 4 bases absentes sur un volume vierge
+  - [x] Enrichissement `ListingResponse` et `ListingSummaryResponse` avec un champ `locked` calculé via `RentalClientService.isLocked()` (détail) ou `getLockStatuses()` (liste — appel batch `POST /internal/applications/locks`)
+  - [x] Fail-safe côté catalog : si le batch lock échoue, tous les ids retournent `true` pour ne pas exposer des boutons edit/delete sur une annonce dont l'état est inconnu
+  - [x] Frontend `applicationsApi.ts` : couche API typée (create, getMine, getReceived, accept, reject) + type `ApplicationStatus`
+  - [x] Frontend `listingsApi.ts` : ajout du champ `locked: boolean` sur `ListingSummary` et `ListingDetail`
+  - [x] Frontend `ApplyPage.tsx` : formulaire react-hook-form + Zod (revenu, statut d'emploi, message), affichage titre/ville/prix, gestion erreur axios
+  - [x] Frontend `MyApplicationsPage.tsx` : liste des candidatures envoyées avec badges de statut, infos listing, message, revenu, lien vers l'annonce
+  - [x] Frontend `ReceivedApplicationsPage.tsx` : liste des candidatures reçues avec nom/email du candidat, boutons Accepter/Refuser (visible si PENDING)
+  - [x] Frontend `ListingDetailPage.tsx` : badge `Non modifiable` (owner uniquement) + CTA "Modifier" désactivé quand `locked`
+  - [x] Frontend `MyListingsPage.tsx` : badge `Non modifiable` en haut à droite de la carte, actions edit/delete désactivées quand `locked`
+  - [x] Frontend `Header.tsx` : lien contextuel "Candidatures" (tenant → `/my-applications`) ou "Candidatures reçues" (owner → `/received-applications`) selon le toggle rôle
+  - [x] Frontend `App.tsx` : routes protégées `/listings/:id/apply`, `/my-applications`, `/received-applications`
+  - [x] Tests unitaires rental-service (**16/16 verts**) : `ApplicationServiceTest` (10 cas : happy path, listing missing, apply-to-own, duplicate, accept/reject happy, non-owner, non-pending, not-found, active statuses) + `LockServiceTest` (6 cas : isLocked true/false, restriction PENDING+ACCEPTED, batch locked/unlocked, empty input, dedup)
+  - [x] Tests catalog-service (**8/8 verts**) : mise à jour `getMyListings_shouldReturnOwnerListings` pour stubber le nouveau `rentalClientService.getLockStatuses`
+  - [x] Smoke tests E2E via gateway : happy path complet (register × 2, create, apply, accept) + cas d'erreur (apply to own 400, duplicate 409, non-owner accept 403, re-transition 409) + vérification lock (detail/mine avant/après apply, update/delete bloqués 409, batch endpoint, `/internal/**` non joignable via gateway)
+  - [x] Commits atomiques sur `feat/rental-applications-and-lock-rule` : `feat(rental): ...applications table`, `fix(infra): ...init script executable`, `feat(catalog): ...internal listing endpoints`, `feat(rental): ...application crud`, `feat(infra): ...rental-service urls`, `feat(rental): ...internal lock endpoints`, `feat(catalog): ...locked flag on responses`, `feat(frontend): ...application pages and lock badges`, `test(rental): ...unit tests`
 
 ---
 
@@ -215,16 +250,6 @@ _(rien en cours — prochaine étape = Étape 12 `rental-service` complet + règ
   - [x] Branche : `feat/catalog-listings-crud-and-pages`
 
 ## ⏳ Backlog
-
-### 📋 Phase Candidatures
-
-- [ ] **Étape 12** — `rental-service` complet + règle de verrouillage + pages frontend
-  - CRUD `Application` (dépôt, accept, reject)
-  - Endpoints internes `/internal/applications/listing/{id}/locked` et `/internal/applications/locks` (batch)
-  - Intégration de l'appel `catalog → rental` pour le verrouillage
-  - Pages front : `ApplyPage`, `MyApplicationsPage`, `ReceivedApplicationsPage`
-  - Affichage du badge « Non modifiable »
-  - Branche : `feat/rental-applications-and-lock-rule`
 
 ### 🔔 Phase Notifications
 

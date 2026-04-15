@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Home, Search, Building2, LogOut, User } from 'lucide-react'
+import { Home, Search, Building2, LogOut, User, FileText, Inbox } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/store/authStore'
 import { useRoleStore } from '@/store/roleStore'
@@ -66,6 +66,25 @@ function Header() {
         <div className="flex items-center gap-3">
           {isAuthenticated && user ? (
             <>
+              {role === 'tenant' ? (
+                <Link
+                  to="/my-applications"
+                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+                  title="Mes candidatures"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  Candidatures
+                </Link>
+              ) : (
+                <Link
+                  to="/received-applications"
+                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+                  title="Candidatures reçues"
+                >
+                  <Inbox className="h-3.5 w-3.5" />
+                  Candidatures reçues
+                </Link>
+              )}
               <Link
                 to="/profile"
                 className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-full px-3 py-1.5"

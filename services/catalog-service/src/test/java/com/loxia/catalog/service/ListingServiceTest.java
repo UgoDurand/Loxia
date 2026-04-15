@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -164,10 +165,13 @@ class ListingServiceTest {
     void getMyListings_shouldReturnOwnerListings() {
         List<Listing> listings = List.of(sampleListing());
         when(listingRepository.findByOwnerIdOrderByCreatedAtDesc(ownerId)).thenReturn(listings);
+        when(rentalClientService.getLockStatuses(List.of(listingId)))
+                .thenReturn(Map.of(listingId, false));
 
         List<ListingSummaryResponse> result = listingService.getMyListings(ownerId);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("Appartement lumineux");
+        assertThat(result.get(0).isLocked()).isFalse();
     }
 }
