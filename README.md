@@ -184,7 +184,7 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 
 ## Démarrage rapide
 
-> ℹ️ **État actuel** : l'authentification et le catalogue sont fonctionnels — les 4 microservices, la **gateway** (validation JWT, propagation `X-User-*`) et le **frontend** React tournent tous `healthy`. Le frontend propose les pages Login/Register, le toggle Locataire/Propriétaire, la recherche d'annonces avec filtres, la création/modification/suppression d'annonces, et les pages de détail. Les candidatures et notifications seront implémentées aux étapes suivantes. Voir [`TASKS.md`](TASKS.md) pour le détail.
+> ℹ️ **État actuel** : l'ensemble du parcours fonctionnel est en place — authentification (JWT + refresh), catalogue d'annonces (CRUD + recherche filtrée), candidatures (dépôt / acceptation / refus + règle de verrouillage catalog↔rental) et notifications in-app. Les 4 microservices, la **gateway** et le **frontend** React tournent tous `healthy`. Voir [`TASKS.md`](TASKS.md) pour le détail par étape.
 
 ### 1. Cloner et préparer
 
@@ -246,6 +246,25 @@ docker compose down -v        # stoppe ET efface les volumes (DB wipée — à u
 # Gateway  : http://localhost:8080  ✅ API entry point
 # pgAdmin  : http://localhost:8090  ✅ dev only
 ```
+
+### 7. Jeu de données de démonstration
+
+Un script de seed crée deux comptes prêts à l'emploi, trois annonces et une candidature en attente — idéal pour tester le parcours locataire / propriétaire sans saisir quoi que ce soit à la main.
+
+```bash
+./scripts/seed.sh             # nécessite `curl` et `jq`
+```
+
+**Comptes de démo** (mot de passe commun : `password123`) :
+
+| Email              | Nom            | Profil         | Contenu seedé                                                        |
+| ------------------ | -------------- | -------------- | -------------------------------------------------------------------- |
+| `alice@loxia.dev`  | Alice Martin   | Locataire      | 1 candidature `PENDING` sur l'annonce T2 Lyon de Bob                 |
+| `bob@loxia.dev`    | Bob Durand     | Propriétaire   | 3 annonces : T2 Lyon, studio Paris 11e, maison Marseille             |
+
+> Connectez-vous avec **Bob** puis allez dans **Profil → Demandes reçues** pour accepter ou refuser la candidature d'Alice. Inversement, **Alice** retrouve sa demande dans **Profil → Mes candidatures**.
+>
+> Le script est idempotent : si les comptes existent déjà il se reconnecte au lieu de renvoyer une erreur. En revanche les annonces ne sont pas dédupliquées — relancez `docker compose down -v && docker compose up -d` avant de re-seeder si vous voulez un état propre.
 
 ---
 
