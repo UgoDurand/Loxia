@@ -12,6 +12,7 @@ import ApplyPage from '@/pages/ApplyPage'
 import MyApplicationsPage from '@/pages/MyApplicationsPage'
 import ReceivedApplicationsPage from '@/pages/ReceivedApplicationsPage'
 import SettingsPage from '@/pages/SettingsPage'
+import ProfileLayout from '@/components/ProfileLayout'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,30 +88,22 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/my-applications"
-            element={
-              <ProtectedRoute>
-                <MyApplicationsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/received-applications"
-            element={
-              <ProtectedRoute>
-                <ReceivedApplicationsPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* Legacy paths → redirect into the profile dashboard */}
+          <Route path="/my-applications" element={<Navigate to="/profile/applications" replace />} />
+          <Route path="/received-applications" element={<Navigate to="/profile/received" replace />} />
+
           <Route
             path="/profile"
             element={
               <ProtectedRoute>
-                <SettingsPage />
+                <ProfileLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<SettingsPage />} />
+            <Route path="applications" element={<MyApplicationsPage />} />
+            <Route path="received" element={<ReceivedApplicationsPage />} />
+          </Route>
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors closeButton />

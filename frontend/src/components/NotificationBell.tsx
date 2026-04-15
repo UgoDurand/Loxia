@@ -69,9 +69,9 @@ function NotificationBell() {
     }
     setOpen(false)
     if (n.type === 'APPLICATION_CREATED') {
-      navigate('/received-applications')
+      navigate('/profile/received')
     } else {
-      navigate('/my-applications')
+      navigate('/profile/applications')
     }
   }
 

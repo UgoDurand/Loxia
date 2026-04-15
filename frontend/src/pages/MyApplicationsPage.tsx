@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { MapPin, Clock, FileText } from 'lucide-react'
 import { applicationsApi, type Application, type ApplicationStatus } from '@/api/applicationsApi'
-import Layout from '@/components/Layout'
 import Loader from '@/components/Loader'
 import EmptyState from '@/components/EmptyState'
 
@@ -19,29 +18,27 @@ function MyApplicationsPage() {
   })
 
   return (
-    <Layout>
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-xl font-bold mb-6">Mes candidatures</h1>
+    <div>
+      <h1 className="text-xl font-bold mb-6">Mes candidatures</h1>
 
-        {isLoading ? (
-          <Loader />
-        ) : applications.length === 0 ? (
-          <EmptyState
-            icon={FileText}
-            title="Aucune candidature envoyée"
-            description="Parcourez les annonces et déposez votre première candidature en quelques clics."
-            actionLabel="Parcourir les annonces"
-            actionTo="/"
-          />
-        ) : (
-          <div className="space-y-4">
-            {applications.map((app) => (
-              <MyApplicationCard key={app.id} application={app} />
-            ))}
-          </div>
-        )}
-      </div>
-    </Layout>
+      {isLoading ? (
+        <Loader />
+      ) : applications.length === 0 ? (
+        <EmptyState
+          icon={FileText}
+          title="Aucune candidature envoyée"
+          description="Parcourez les annonces et déposez votre première candidature en quelques clics."
+          actionLabel="Parcourir les annonces"
+          actionTo="/"
+        />
+      ) : (
+        <div className="space-y-4">
+          {applications.map((app) => (
+            <MyApplicationCard key={app.id} application={app} />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
