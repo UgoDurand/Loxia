@@ -147,19 +147,6 @@ BOB_LISTING_3=$(create_listing "${BOB_TOKEN}" '{
 }')
 log "  + Marseille maison → ${BOB_LISTING_3}"
 
-# ─── Listing from Alice so the toggle has content on both sides ──────
-ALICE_LISTING_1=$(create_listing "${ALICE_TOKEN}" '{
-  "title": "Loft atypique — ancienne fabrique",
-  "description": "Loft de caractère dans ancienne fabrique rénovée. Volumes généreux, hauts plafonds.",
-  "propertyType": "Loft",
-  "city": "Bordeaux",
-  "price": 1400,
-  "surface": 85,
-  "rooms": 2,
-  "photoUrls": ["https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800"]
-}')
-log "  + Bordeaux loft → ${ALICE_LISTING_1}"
-
 # ─── Applications ────────────────────────────────────────────────────
 log "Seeding applications…"
 create_application "${ALICE_TOKEN}" "${BOB_LISTING_1}"
@@ -171,9 +158,8 @@ echo
 echo -e "${GREEN}Done.${RESET} Stack seeded at ${API_URL}."
 echo
 echo "Demo accounts (password: ${PASSWORD}):"
-echo "  · ${ALICE_EMAIL}  — Alice Martin  (applicant + 1 listing in Bordeaux)"
-echo "  · ${BOB_EMAIL}    — Bob Durand    (landlord, 3 listings in Lyon/Paris/Marseille)"
+echo "  · ${ALICE_EMAIL}  — Alice Martin  (tenant — 1 pending application)"
+echo "  · ${BOB_EMAIL}    — Bob Durand    (landlord — 3 listings in Lyon/Paris/Marseille)"
 echo
-echo "Alice has a PENDING application on Bob's Lyon listing — log in as Bob,"
-echo "switch to the \"Propriétaire\" toggle and head to \"Candidatures reçues\""
-echo "to see it and accept/refuse."
+echo "Alice has a PENDING application on Bob's Lyon listing — log in as Bob"
+echo "and head to \"Profil → Demandes reçues\" to accept or refuse it."
