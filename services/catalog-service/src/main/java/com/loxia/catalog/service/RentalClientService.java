@@ -2,9 +2,13 @@ package com.loxia.catalog.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,5 +43,42 @@ public class RentalClientService {
             return true; // fail-safe: block if rental-service is down
         }
         return false;
+    }
+
+    /**
+     * Batch lock check. Returns a map listingId → locked for every id in the
+     * input. Fail-safe: on error, returns all entries as true (blocks by default)
+     * so the UI does not accidentally expose edit/delete actions for a listing
+     * whose state is unknown.
+     */
+    public Map<UUID, Boolean> getLockStatuses(List<UUID> listingIds) {
+        if (listingIds == null || listingIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        try {
+            Map<String, Object> body = new HashMap<>();
+            body.put("listingIds", listingIds);
+            Map<String, Object> response = rentalRestClient.post()
+                    .uri("/internal/applications/locks")
+                    .body(body)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+            if (response != null && response.get("locks") instanceof Map<?, ?> rawLocks) {
+                Map<UUID, Boolean> result = new HashMap<>();
+                for (Map.Entry<?, ?> entry : rawLocks.entrySet()) {
+                    UUID id = UUID.fromString(entry.getKey().toString());
+                    result.put(id, Boolean.TRUE.equals(entry.getValue()));
+                }
+                return result;
+            }
+        } catch (Exception e) {
+            log.warn("Failed batch lock check for {} ids: {} — marking all as locked (fail-safe)",
+                    listingIds.size(), e.getMessage());
+        }
+        Map<UUID, Boolean> failSafe = new HashMap<>();
+        for (UUID id : listingIds) {
+            failSafe.put(id, true);
+        }
+        return failSafe;
     }
 }

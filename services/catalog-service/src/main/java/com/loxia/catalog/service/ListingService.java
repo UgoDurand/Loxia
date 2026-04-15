@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -79,7 +79,8 @@ public class ListingService {
     public ListingResponse getById(UUID listingId) {
         Listing listing = findByIdOrThrow(listingId);
         String ownerName = authClientService.getOwnerName(listing.getOwnerId());
-        return ListingResponse.from(listing, ownerName);
+        boolean locked = rentalClientService.isLocked(listingId);
+        return ListingResponse.from(listing, ownerName, locked);
     }
 
     @Transactional(readOnly = true)
@@ -107,8 +108,14 @@ public class ListingService {
 
     @Transactional(readOnly = true)
     public List<ListingSummaryResponse> getMyListings(UUID ownerId) {
-        return listingRepository.findByOwnerIdOrderByCreatedAtDesc(ownerId).stream()
-                .map(ListingSummaryResponse::from)
+        List<Listing> listings = listingRepository.findByOwnerIdOrderByCreatedAtDesc(ownerId);
+        if (listings.isEmpty()) {
+            return List.of();
+        }
+        List<UUID> ids = listings.stream().map(Listing::getId).toList();
+        Map<UUID, Boolean> lockStatuses = rentalClientService.getLockStatuses(ids);
+        return listings.stream()
+                .map(l -> ListingSummaryResponse.from(l, Boolean.TRUE.equals(lockStatuses.get(l.getId()))))
                 .toList();
     }
 
