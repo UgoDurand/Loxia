@@ -9,9 +9,7 @@
 .gitignore
 .gitattributes
 
-# Local assistant context
-CLAUDE.md
-.claude/
+# Local config files
 .cursor/
 
 # Secrets / env
