@@ -48,6 +48,7 @@ management:
 services:
   auth-url: ${AUTH_SERVICE_URL:http://localhost:8081}
   catalog-url: ${CATALOG_SERVICE_URL:http://localhost:8082}
+  notification-url: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
 
 logging:
   level:

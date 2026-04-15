@@ -15,3 +15,4 @@ spring:
 services:
   auth-url: ${AUTH_SERVICE_URL:http://auth-service:8081}
   catalog-url: ${CATALOG_SERVICE_URL:http://catalog-service:8082}
+  notification-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}

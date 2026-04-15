@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/store/authStore'
 import { useRoleStore } from '@/store/roleStore'
 import { authApi } from '@/api/authApi'
+import NotificationBell from '@/components/NotificationBell'
 import { cn } from '@/lib/utils'
 
 function Header() {
@@ -85,6 +86,7 @@ function Header() {
                   Candidatures reçues
                 </Link>
               )}
+              <NotificationBell />
               <Link
                 to="/profile"
                 className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-full px-3 py-1.5"

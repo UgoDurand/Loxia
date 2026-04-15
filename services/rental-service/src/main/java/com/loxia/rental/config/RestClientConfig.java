@@ -27,6 +27,14 @@ public class RestClientConfig {
                 .build();
     }
 
+    @Bean
+    public RestClient notificationRestClient(@Value("${services.notification-url}") String notificationUrl) {
+        return RestClient.builder()
+                .baseUrl(notificationUrl)
+                .requestFactory(timeoutFactory())
+                .build();
+    }
+
     private SimpleClientHttpRequestFactory timeoutFactory() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(Duration.ofSeconds(3));

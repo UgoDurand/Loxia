@@ -36,6 +36,8 @@ class ApplicationServiceTest {
     private CatalogClientService catalogClientService;
     @Mock
     private AuthClientService authClientService;
+    @Mock
+    private NotificationClientService notificationClientService;
 
     @InjectMocks
     private ApplicationService applicationService;

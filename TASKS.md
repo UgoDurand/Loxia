@@ -184,7 +184,30 @@
 
 ## 🚧 In progress
 
-_(rien en cours — prochaine étape = Étape 13 `notification-service` + cloche front)_
+_(rien en cours — prochaine étape = Étape 14 polissage / release v0.1.0)_
+
+---
+
+- **Étape 13** — `notification-service` complet + intégration rental + cloche frontend _(2026-04-15)_
+  - [x] Branche `feat/notifications-service-and-bell` créée depuis `develop`
+  - [x] Migration Flyway `V1__create_notifications_table.sql` (table `notifications` : 9 colonnes + 3 indexes sur `user_id`, `(user_id, read)`, `created_at DESC`)
+  - [x] Enum `NotificationType` (APPLICATION_CREATED / APPLICATION_ACCEPTED / APPLICATION_REJECTED) + entité JPA `Notification` (`@PrePersist` défaut `created_at`)
+  - [x] `NotificationRepository` : `findByUserIdOrderByCreatedAtDesc`, `countByUserIdAndReadIsFalse`, `markAllAsReadForUser` (`@Modifying @Query` bulk update)
+  - [x] DTOs : `CreateNotificationRequest` (Bean Validation), `NotificationResponse` (factory `from(Notification)`), `UnreadCountResponse`
+  - [x] `pom.xml` notification-service : ajout `spring-boot-starter-validation`
+  - [x] `NotificationService` : `create`, `getMyNotifications`, `getUnreadCount`, `markAsRead` (404/403, idempotent), `markAllAsRead`
+  - [x] `NotificationController` (public) : `GET /mine`, `GET /unread-count`, `POST /{id}/read`, `POST /read-all` avec `@RequestHeader("X-User-Id")`
+  - [x] `InternalNotificationController` : `POST /internal/notifications` (201 Created) appelé par rental-service
+  - [x] `NotificationClientService` côté rental-service + bean `notificationRestClient` (timeout 3s, graceful degradation : un échec d'envoi ne casse pas la transition)
+  - [x] `ApplicationService` côté rental : envoi d'une notification au propriétaire lors de `create` (APPLICATION_CREATED) et au candidat lors de `accept` (APPLICATION_ACCEPTED) / `reject` (APPLICATION_REJECTED)
+  - [x] `application.yml` / `application-docker.yml` rental-service : `services.notification-url` branché sur `NOTIFICATION_SERVICE_URL`
+  - [x] `docker-compose.yml` : env `NOTIFICATION_SERVICE_URL` pour rental-service
+  - [x] Frontend `notificationsApi.ts` : couche API typée (`getMine`, `getUnreadCount`, `markAsRead`, `markAllAsRead`) + type `NotificationType`
+  - [x] Frontend `NotificationBell.tsx` : cloche dans le header, badge unread (polling TanStack Query 30s + refetch on focus), dropdown avec liste, bullet bleu sur non-lu, temps relatif, click → mark-as-read + navigation vers la page candidatures correspondante, bouton "Tout marquer comme lu", click-outside pour fermer
+  - [x] Frontend `Header.tsx` : intégration de `NotificationBell` entre le lien Candidatures et Mon Profil
+  - [x] Tests unitaires `NotificationServiceTest` (**9/9 verts**) : create, getMyNotifications (non-vide + vide), getUnreadCount, markAsRead (happy, idempotent, not-found, non-owner), markAllAsRead
+  - [x] Tests rental-service (**16/16 verts**) : `ApplicationServiceTest` mis à jour avec mock `NotificationClientService`
+  - [x] Commits atomiques sur `feat/notifications-service-and-bell` : `feat(notification): ...migration+entity+repo+dtos`, `feat(notification): ...service+endpoints`, `feat(rental): ...notify on transitions`, `feat(frontend): ...notification bell`, `test(notification): ...unit tests`
 
 ---
 
@@ -250,15 +273,6 @@ _(rien en cours — prochaine étape = Étape 13 `notification-service` + cloche
   - [x] Branche : `feat/catalog-listings-crud-and-pages`
 
 ## ⏳ Backlog
-
-### 🔔 Phase Notifications
-
-- [ ] **Étape 13** — `notification-service` + cloche front
-  - CRUD `Notification`
-  - Endpoint interne `POST /internal/notifications` appelé par `rental-service` lors des actions sur les candidatures
-  - Composant `NotificationBell` dans le header (TanStack Query, polling 30s)
-  - Page/dropdown de liste des notifications
-  - Branche : `feat/notifications-service-and-bell`
 
 ### ✨ Phase Polish
 
