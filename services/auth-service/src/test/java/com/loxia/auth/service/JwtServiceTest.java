@@ -59,4 +59,22 @@ class JwtServiceTest {
     void isTokenValid_returnsFalseForRandomString() {
         assertThat(jwtService.isTokenValid("not.a.jwt")).isFalse();
     }
+
+    @Test
+    void extractFullName_returnsCorrectFullName() {
+        String token = jwtService.generateAccessToken(user);
+        assertThat(jwtService.extractFullName(token)).isEqualTo("Alice Dupont");
+    }
+
+    @Test
+    void isTokenValid_returnsFalseWhenSignedWithDifferentSecret() {
+        JwtService other = new JwtService("another-secret-that-is-also-long-enough-for-hs256");
+        String forged = other.generateAccessToken(user);
+        assertThat(jwtService.isTokenValid(forged)).isFalse();
+    }
+
+    @Test
+    void isTokenValid_returnsFalseForBlankInput() {
+        assertThat(jwtService.isTokenValid("")).isFalse();
+    }
 }

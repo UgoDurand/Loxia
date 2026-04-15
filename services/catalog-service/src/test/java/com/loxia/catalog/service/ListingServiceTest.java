@@ -174,4 +174,39 @@ class ListingServiceTest {
         assertThat(result.get(0).getTitle()).isEqualTo("Appartement lumineux");
         assertThat(result.get(0).isLocked()).isFalse();
     }
+
+    @Test
+    void getMyListings_shouldPropagateLockedFlagFromBatch() {
+        List<Listing> listings = List.of(sampleListing());
+        when(listingRepository.findByOwnerIdOrderByCreatedAtDesc(ownerId)).thenReturn(listings);
+        when(rentalClientService.getLockStatuses(List.of(listingId)))
+                .thenReturn(Map.of(listingId, true));
+
+        List<ListingSummaryResponse> result = listingService.getMyListings(ownerId);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).isLocked()).isTrue();
+    }
+
+    @Test
+    void getMyListings_shouldReturnEmptyListWithoutCallingRentalClient() {
+        when(listingRepository.findByOwnerIdOrderByCreatedAtDesc(ownerId)).thenReturn(List.of());
+
+        List<ListingSummaryResponse> result = listingService.getMyListings(ownerId);
+
+        assertThat(result).isEmpty();
+        verifyNoInteractions(rentalClientService);
+    }
+
+    @Test
+    void getById_shouldExposeLockedFlag() {
+        Listing listing = sampleListing();
+        when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
+        when(authClientService.getOwnerName(ownerId)).thenReturn("Jean Dupont");
+        when(rentalClientService.isLocked(listingId)).thenReturn(true);
+
+        ListingResponse result = listingService.getById(listingId);
+
+        assertThat(result.isLocked()).isTrue();
+    }
 }

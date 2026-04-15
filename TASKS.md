@@ -184,7 +184,7 @@
 
 ## 🚧 In progress
 
-_(rien en cours — prochaine étape = Étape 15 tests + seed + préparation démo)_
+_(rien en cours — prochaine étape = Étape 16 documentation finale + README + release v1.0.0)_
 
 ---
 
@@ -284,15 +284,18 @@ _(rien en cours — prochaine étape = Étape 15 tests + seed + préparation dé
   - [x] Build Vite vert (1964 modules, 516 KB bundle)
   - [x] Branche : `feat/settings-and-ui-polish`
 
+- **Étape 15** — Tests ciblés, seed de démo, parcours utilisateur _(2026-04-15)_
+  - [x] `JwtServiceTest` enrichi (9/9 verts) : ajout `extractFullName`, `isTokenValid` avec signature d'une autre clé, `isTokenValid` sur chaîne vide
+  - [x] `ListingServiceTest` enrichi (11/11 verts) : propagation du flag `locked` via `getMyListings` batch, court-circuit du `RentalClientService` sur liste vide, exposition du `locked` via `getById`
+  - [x] Full suite Maven multi-modules verte : auth (9) + catalog (11) + rental (16) + notification (9) = **45 tests OK**
+  - [x] Script `scripts/seed.sh` idempotent : 2 comptes démo (`alice@loxia.dev`, `bob@loxia.dev` / `password123`), 4 annonces (Lyon T2, Paris studio, Marseille maison, Bordeaux loft), 1 candidature `PENDING` d'Alice sur le T2 de Bob, readiness probe sur `/actuator/health`, fallback login sur 409
+  - [x] Test d'idempotence vérifié : re-run avec comptes existants → login fallback OK
+  - [x] `docs/demo-script.md` : parcours de démo ~5 min en 8 étapes (visiteur, inscription, candidature, règle de lock, notifications, accept/refuse, profil, empty states) + troubleshooting
+  - [x] Branche : `chore/tests-and-demo-seed`
+
 ## ⏳ Backlog
 
 ### ✨ Phase Polish
-
-- [ ] **Étape 15** — Tests, données de seed, préparation démo
-  - Tests unitaires ciblés (JwtService, lock rule, ApplicationService)
-  - Script `scripts/seed.sh` avec quelques annonces et 2 comptes de démo
-  - Vérification du parcours utilisateur complet (cf. `README.md` section démo)
-  - Branche : `chore/tests-and-demo-seed`
 
 - [ ] **Étape 16** — Documentation finale (README + doc technique)
   - Compléter `docs/architecture.md` (vue d'ensemble, ADRs, schémas C4, séquences UML)
