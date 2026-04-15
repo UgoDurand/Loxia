@@ -2,9 +2,7 @@
 # Loxia — .gitignore
 # =====================================================================
 
-# ---------- Local assistant context (NEVER commit) ----------
-CLAUDE.md
-.claude/
+# ---------- Local config (NEVER commit) ----------
 .cursor/
 .aider*
 .github-copilot/

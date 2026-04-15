@@ -45,6 +45,10 @@ management:
       probes:
         enabled: true
 
+services:
+  auth-url: ${AUTH_SERVICE_URL:http://localhost:8081}
+  rental-url: ${RENTAL_SERVICE_URL:http://localhost:8083}
+
 logging:
   level:
     root: INFO

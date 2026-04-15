@@ -37,6 +37,11 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+jwt:
+  # Override via JWT_SECRET env var in production / Docker.
+  # Must be at least 32 characters for HS256.
+  secret: ${JWT_SECRET:local-dev-secret-change-me-in-prod}
+
 server:
   port: 8081
 

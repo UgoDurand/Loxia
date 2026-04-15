@@ -7,9 +7,9 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![React](https://img.shields.io/badge/React-18-blue.svg)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8.svg)](https://tailwindcss.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8.svg)](https://tailwindcss.com/)
 [![Docker](https://img.shields.io/badge/Docker-Compose%20v2-2496ed.svg)](https://docs.docker.com/compose/)
-[![License](https://img.shields.io/badge/License-TBD-lightgrey.svg)](#licence)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
@@ -24,7 +24,6 @@
 - [Structure du dépôt](#structure-du-dépôt)
 - [Stratégie de branches (GitFlow)](#stratégie-de-branches-gitflow)
 - [Workflow de contribution](#workflow-de-contribution)
-- [Suivi d'avancement](#suivi-davancement)
 - [Documentation détaillée](#documentation-détaillée)
 - [Équipe](#équipe)
 - [Licence](#licence)
@@ -184,7 +183,7 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 
 ## Démarrage rapide
 
-> ℹ️ **État actuel** : l'infrastructure Docker complète est en place — les 4 microservices métier, la **gateway** Spring Cloud Gateway et le **frontend** React (page placeholder) tournent tous `healthy`. Les endpoints métier (auth, catalog, rental, notifications) seront implémentés aux étapes suivantes. Voir [`TASKS.md`](TASKS.md) pour le détail.
+> ℹ️ **État actuel** : l'ensemble du parcours fonctionnel est en place — authentification (JWT + refresh), catalogue d'annonces (CRUD + recherche filtrée), candidatures (dépôt / acceptation / refus + règle de verrouillage catalog↔rental) et notifications in-app. Les 4 microservices, la **gateway** et le **frontend** React tournent tous `healthy`.
 
 ### 1. Cloner et préparer
 
@@ -242,10 +241,29 @@ docker compose down -v        # stoppe ET efface les volumes (DB wipée — à u
 ### 6. Accès aux services exposés
 
 ```bash
-# Frontend : http://localhost:3000  ✅ page placeholder Loxia
+# Frontend : http://localhost:3000  ✅ Login, Register, accueil, annonces, détail, création
 # Gateway  : http://localhost:8080  ✅ API entry point
 # pgAdmin  : http://localhost:8090  ✅ dev only
 ```
+
+### 7. Jeu de données de démonstration
+
+Un script de seed crée deux comptes prêts à l'emploi, trois annonces et une candidature en attente — idéal pour tester le parcours locataire / propriétaire sans saisir quoi que ce soit à la main.
+
+```bash
+./scripts/seed.sh             # nécessite `curl` et `jq`
+```
+
+**Comptes de démo** (mot de passe commun : `password123`) :
+
+| Email              | Nom            | Profil         | Contenu seedé                                                        |
+| ------------------ | -------------- | -------------- | -------------------------------------------------------------------- |
+| `alice@loxia.dev`  | Alice Martin   | Locataire      | 1 candidature `PENDING` sur l'annonce T2 Lyon de Bob                 |
+| `bob@loxia.dev`    | Bob Durand     | Propriétaire   | 3 annonces : T2 Lyon, studio Paris 11e, maison Marseille             |
+
+> Connectez-vous avec **Bob** puis allez dans **Profil → Demandes reçues** pour accepter ou refuser la candidature d'Alice. Inversement, **Alice** retrouve sa demande dans **Profil → Mes candidatures**.
+>
+> Le script est idempotent : si les comptes existent déjà il se reconnecte au lieu de renvoyer une erreur. En revanche les annonces ne sont pas dédupliquées — relancez `docker compose down -v && docker compose up -d` avant de re-seeder si vous voulez un état propre.
 
 ---
 
@@ -270,11 +288,8 @@ Loxia/
 ├── .gitignore
 ├── .dockerignore
 ├── docker-compose.yml        # Orchestration de la stack
-├── TASKS.md                  # Suivi d'avancement (à jour)
 └── README.md                 # Ce fichier
 ```
-
-> Le fichier `CLAUDE.md` éventuellement présent à la racine d'une copie locale est **personnel** : il est listé dans `.gitignore` et ne doit jamais être committé.
 
 ---
 
@@ -328,16 +343,7 @@ docs(readme): update quick start instructions
 6. **Ouvrir une Pull Request** vers `develop` (template de PR à venir).
 7. **Faire valider** par un coéquipier (ou auto-validation si en solo sur la feature).
 8. **Merger** dans `develop` (`--no-ff` recommandé pour garder la trace de la feature) puis supprimer la branche feature.
-9. **Mettre à jour** [`TASKS.md`](TASKS.md) pour cocher l'item terminé et préciser ce qui reste à faire.
-10. **Release** : à un jalon majeur, merge `develop` → `main` et tag (`v0.1.0`, `v0.2.0`, …).
-
----
-
-## Suivi d'avancement
-
-L'état d'avancement détaillé du projet (ce qui est fait, ce qui est en cours, ce qui reste à faire) est maintenu en continu dans **[`TASKS.md`](TASKS.md)**.
-
-C'est le **premier fichier** à ouvrir en arrivant sur le dépôt en tant que contributeur : il indique précisément où en est l'équipe et par quoi commencer.
+9. **Release** : à un jalon majeur, merge `develop` → `main` et tag (`v0.1.0`, `v0.2.0`, …).
 
 ---
 
@@ -350,17 +356,17 @@ C'est le **premier fichier** à ouvrir en arrivant sur le dépôt en tant que co
 
 ## Équipe
 
-> _À compléter_
+Projet réalisé par une équipe de 6 étudiants en école d'ingénieur.
 
-| Nom | Rôle | GitHub |
-| --- | --- | --- |
-|     |      |        |
-|     |      |        |
-|     |      |        |
-|     |      |        |
+- Ugo Durand
+- Jonas Obrun
+- Nicolas Ramirez
+- Cyril Grosjean
+- Ibrahim Khan
+- Tarek El Missiry
 
 ---
 
 ## Licence
 
-> _À définir._
+Ce projet est distribué sous licence **MIT**. Voir le fichier [`LICENSE`](LICENSE) pour le texte complet.
