@@ -184,7 +184,7 @@
 
 ## 🚧 In progress
 
-_(rien en cours — prochaine étape = Étape 14 polissage / release v0.1.0)_
+_(rien en cours — prochaine étape = Étape 15 tests + seed + préparation démo)_
 
 ---
 
@@ -272,14 +272,21 @@ _(rien en cours — prochaine étape = Étape 14 polissage / release v0.1.0)_
   - [x] Tests rental-service (**16/16 verts**) : `ApplicationServiceTest` mis à jour avec mock `NotificationClientService`
   - [x] Commits atomiques sur `feat/notifications-service-and-bell` : `feat(notification): ...migration+entity+repo+dtos`, `feat(notification): ...service+endpoints`, `feat(rental): ...notify on transitions`, `feat(frontend): ...notification bell`, `test(notification): ...unit tests`
 
+- **Étape 14** — Page Paramètres + finitions UI _(2026-04-15)_
+  - [x] `authApi.updateMe` (PUT `/api/auth/me`) et nouvelle méthode `setUser` dans `authStore`
+  - [x] Page `SettingsPage` : react-hook-form + Zod, pré-remplie via `GET /api/auth/me`, mise à jour via `authApi.updateMe`, synchro `authStore.setUser`, gestion 409 (email déjà utilisé) avec `setError` + toast
+  - [x] Route protégée `/profile` câblée sur `SettingsPage` (lien `Mon Profil` du header actif)
+  - [x] Intégration de `sonner` (v2.0.7) + `<Toaster position="top-right" richColors closeButton />` monté au niveau de `App.tsx`
+  - [x] Composant partagé `Loader` (spinner `lucide-react` + label configurable)
+  - [x] Composant partagé `EmptyState` (icône, titre, description, CTA optionnel, style card pointillée indigo)
+  - [x] Refonte des états vides et loaders sur toutes les pages : `HomePage` (tenant + owner), `MyListingsPage`, `MyApplicationsPage`, `ReceivedApplicationsPage`, `ListingDetailPage`, `ApplyPage`, `ListingFormPage`, `SettingsPage`
+  - [x] Branchage des toasts dans les mutations clés : création/édition/suppression d'annonce (avec message dédié pour 409 annonce verrouillée), création/acceptation/refus de candidature, mise à jour du profil
+  - [x] Build Vite vert (1964 modules, 516 KB bundle)
+  - [x] Branche : `feat/settings-and-ui-polish`
+
 ## ⏳ Backlog
 
 ### ✨ Phase Polish
-
-- [ ] **Étape 14** — Page Paramètres + finitions UI
-  - Page `SettingsPage` (modifier nom complet et email)
-  - Empty states, toasts d'erreur, loaders
-  - Branche : `feat/settings-and-ui-polish`
 
 - [ ] **Étape 15** — Tests, données de seed, préparation démo
   - Tests unitaires ciblés (JwtService, lock rule, ApplicationService)
