@@ -126,6 +126,7 @@ services:
       RENTAL_DB_NAME: ${RENTAL_DB_NAME:-rental_db}
       AUTH_SERVICE_URL: http://auth-service:8081
       CATALOG_SERVICE_URL: http://catalog-service:8082
+      NOTIFICATION_SERVICE_URL: http://notification-service:8084
     networks:
       - loxia-net
     expose:

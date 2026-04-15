@@ -27,6 +27,7 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final CatalogClientService catalogClientService;
     private final AuthClientService authClientService;
+    private final NotificationClientService notificationClientService;
 
     @Transactional
     public ApplicationResponse create(UUID applicantId, CreateApplicationRequest request) {
@@ -59,6 +60,16 @@ public class ApplicationService {
                 application.getId(), applicantId, request.getListingId());
 
         ExternalUserResponse applicant = authClientService.getUser(applicantId).orElse(null);
+
+        String applicantName = applicant != null ? applicant.getFullName() : "Un candidat";
+        notificationClientService.send(
+                listing.getOwnerId(),
+                "APPLICATION_CREATED",
+                "Nouvelle candidature",
+                applicantName + " a postulé à votre annonce « " + listing.getTitle() + " »",
+                listing.getId(),
+                application.getId());
+
         return toResponse(application, listing, applicant);
     }
 
@@ -112,6 +123,25 @@ public class ApplicationService {
         log.info("Application {} transitioned to {} by owner {}", applicationId, newStatus, ownerId);
 
         ExternalUserResponse applicant = authClientService.getUser(application.getApplicantId()).orElse(null);
+
+        if (newStatus == ApplicationStatus.ACCEPTED) {
+            notificationClientService.send(
+                    application.getApplicantId(),
+                    "APPLICATION_ACCEPTED",
+                    "Candidature acceptée",
+                    "Votre candidature pour « " + listing.getTitle() + " » a été acceptée",
+                    listing.getId(),
+                    application.getId());
+        } else if (newStatus == ApplicationStatus.REJECTED) {
+            notificationClientService.send(
+                    application.getApplicantId(),
+                    "APPLICATION_REJECTED",
+                    "Candidature refusée",
+                    "Votre candidature pour « " + listing.getTitle() + " » a été refusée",
+                    listing.getId(),
+                    application.getId());
+        }
+
         return toResponse(application, listing, applicant);
     }
 
