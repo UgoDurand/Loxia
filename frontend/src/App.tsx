@@ -7,6 +7,9 @@ import RegisterPage from '@/pages/RegisterPage'
 import ListingDetailPage from '@/pages/ListingDetailPage'
 import ListingFormPage from '@/pages/ListingFormPage'
 import MyListingsPage from '@/pages/MyListingsPage'
+import ApplyPage from '@/pages/ApplyPage'
+import MyApplicationsPage from '@/pages/MyApplicationsPage'
+import ReceivedApplicationsPage from '@/pages/ReceivedApplicationsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,6 +74,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <MyListingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/listings/:id/apply"
+            element={
+              <ProtectedRoute>
+                <ApplyPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-applications"
+            element={
+              <ProtectedRoute>
+                <MyApplicationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/received-applications"
+            element={
+              <ProtectedRoute>
+                <ReceivedApplicationsPage />
               </ProtectedRoute>
             }
           />

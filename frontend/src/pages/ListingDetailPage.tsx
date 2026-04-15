@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, MapPin, Maximize2, BedDouble, User } from 'lucide-react'
+import { ArrowLeft, MapPin, Maximize2, BedDouble, User, Lock } from 'lucide-react'
 import { listingsApi } from '@/api/listingsApi'
 import { useAuthStore } from '@/store/authStore'
 import Layout from '@/components/Layout'
@@ -70,6 +70,12 @@ function ListingDetailPage() {
             <span className="absolute top-3 left-3 bg-indigo-600 text-white text-sm font-medium px-3 py-1 rounded">
               {listing.propertyType}
             </span>
+            {isOwner && listing.locked && (
+              <span className="absolute top-3 right-3 flex items-center gap-1 bg-amber-500 text-white text-sm font-medium px-3 py-1 rounded">
+                <Lock className="h-4 w-4" />
+                Non modifiable
+              </span>
+            )}
           </div>
 
           <div className="p-6 sm:flex sm:gap-8">
@@ -108,12 +114,22 @@ function ListingDetailPage() {
               </p>
 
               {isOwner ? (
-                <Link
-                  to={`/listings/${listing.id}/edit`}
-                  className="inline-block mt-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
-                >
-                  Modifier cette annonce
-                </Link>
+                listing.locked ? (
+                  <span
+                    className="inline-flex items-center gap-1 mt-3 bg-gray-200 text-gray-500 text-sm font-medium px-5 py-2.5 rounded-lg cursor-not-allowed"
+                    title="Cette annonce a une candidature en cours et ne peut pas être modifiée"
+                  >
+                    <Lock className="h-4 w-4" />
+                    Non modifiable
+                  </span>
+                ) : (
+                  <Link
+                    to={`/listings/${listing.id}/edit`}
+                    className="inline-block mt-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+                  >
+                    Modifier cette annonce
+                  </Link>
+                )
               ) : isAuthenticated ? (
                 <Link
                   to={`/listings/${listing.id}/apply`}
