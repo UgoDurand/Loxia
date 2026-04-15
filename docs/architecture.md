@@ -1,7 +1,6 @@
 # Loxia — Documentation d'architecture
 
 > Pour la vue grand public et les captures d'écran, voir [`../README.md`](../README.md).
-> Pour le suivi d'avancement étape par étape, voir [`../TASKS.md`](../TASKS.md).
 
 ---
 

@@ -24,7 +24,6 @@
 - [Structure du dépôt](#structure-du-dépôt)
 - [Stratégie de branches (GitFlow)](#stratégie-de-branches-gitflow)
 - [Workflow de contribution](#workflow-de-contribution)
-- [Suivi d'avancement](#suivi-davancement)
 - [Documentation détaillée](#documentation-détaillée)
 - [Équipe](#équipe)
 - [Licence](#licence)
@@ -184,7 +183,7 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 
 ## Démarrage rapide
 
-> ℹ️ **État actuel** : l'ensemble du parcours fonctionnel est en place — authentification (JWT + refresh), catalogue d'annonces (CRUD + recherche filtrée), candidatures (dépôt / acceptation / refus + règle de verrouillage catalog↔rental) et notifications in-app. Les 4 microservices, la **gateway** et le **frontend** React tournent tous `healthy`. Voir [`TASKS.md`](TASKS.md) pour le détail par étape.
+> ℹ️ **État actuel** : l'ensemble du parcours fonctionnel est en place — authentification (JWT + refresh), catalogue d'annonces (CRUD + recherche filtrée), candidatures (dépôt / acceptation / refus + règle de verrouillage catalog↔rental) et notifications in-app. Les 4 microservices, la **gateway** et le **frontend** React tournent tous `healthy`.
 
 ### 1. Cloner et préparer
 
@@ -289,7 +288,6 @@ Loxia/
 ├── .gitignore
 ├── .dockerignore
 ├── docker-compose.yml        # Orchestration de la stack
-├── TASKS.md                  # Suivi d'avancement (à jour)
 └── README.md                 # Ce fichier
 ```
 
@@ -345,16 +343,7 @@ docs(readme): update quick start instructions
 6. **Ouvrir une Pull Request** vers `develop` (template de PR à venir).
 7. **Faire valider** par un coéquipier (ou auto-validation si en solo sur la feature).
 8. **Merger** dans `develop` (`--no-ff` recommandé pour garder la trace de la feature) puis supprimer la branche feature.
-9. **Mettre à jour** [`TASKS.md`](TASKS.md) pour cocher l'item terminé et préciser ce qui reste à faire.
-10. **Release** : à un jalon majeur, merge `develop` → `main` et tag (`v0.1.0`, `v0.2.0`, …).
-
----
-
-## Suivi d'avancement
-
-L'état d'avancement détaillé du projet (ce qui est fait, ce qui est en cours, ce qui reste à faire) est maintenu en continu dans **[`TASKS.md`](TASKS.md)**.
-
-C'est le **premier fichier** à ouvrir en arrivant sur le dépôt en tant que contributeur : il indique précisément où en est l'équipe et par quoi commencer.
+9. **Release** : à un jalon majeur, merge `develop` → `main` et tag (`v0.1.0`, `v0.2.0`, …).
 
 ---
 
