@@ -18,7 +18,7 @@ Front : <http://localhost:3000> · Gateway : <http://localhost:8080>
 
 | Compte | Rôle dans le scénario |
 |---|---|
-| `alice@loxia.dev` — Alice Martin | locataire qui postule, possède aussi un loft à Bordeaux |
+| `alice@loxia.dev` — Alice Martin | locataire qui postule sur les biens de Bob |
 | `bob@loxia.dev` — Bob Durand | propriétaire des 3 biens Lyon / Paris / Marseille |
 
 ## Parcours
