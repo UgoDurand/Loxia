@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8.svg)](https://tailwindcss.com/)
 [![Docker](https://img.shields.io/badge/Docker-Compose%20v2-2496ed.svg)](https://docs.docker.com/compose/)
-[![License](https://img.shields.io/badge/License-TBD-lightgrey.svg)](#licence)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
@@ -367,17 +367,17 @@ C'est le **premier fichier** à ouvrir en arrivant sur le dépôt en tant que co
 
 ## Équipe
 
-> _À compléter_
+Projet réalisé par une équipe de 6 étudiants en école d'ingénieur.
 
-| Nom | Rôle | GitHub |
-| --- | --- | --- |
-|     |      |        |
-|     |      |        |
-|     |      |        |
-|     |      |        |
+- Ugo Durand
+- Jonas Obrun
+- Nicolas Ramirez
+- Cyril Grosjean
+- Ibrahim Khan
+- Tarek El Missiry
 
 ---
 
 ## Licence
 
-> _À définir._
+Ce projet est distribué sous licence **MIT**. Voir le fichier [`LICENSE`](LICENSE) pour le texte complet.
