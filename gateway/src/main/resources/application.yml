@@ -45,6 +45,17 @@ spring:
           predicates:
             - Path=/api/notifications/**
 
+        # chat-service: real-time chat (REST + WebSocket STOMP)
+        - id: chat-service-rest
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/chat/**
+
+        - id: chat-service-ws
+          uri: http://localhost:8085
+          predicates:
+            - Path=/ws-chat/**
+
       # --------------- CORS -------------------------------------------
       # Open CORS policy for local development. Restricted to the front-
       # end origin once the frontend is wired up (step 7).

@@ -20,7 +20,7 @@
 
 ## 1. Vue d'ensemble
 
-Loxia est une application web de location de logements bâtie en **architecture microservices**. Le système est composé de **4 microservices métier** orchestrés derrière une **API Gateway** unique, d'un **front-end React** et d'une **base PostgreSQL** (4 bases isolées). L'ensemble est conteneurisé via Docker Compose.
+Loxia est une application web de location de logements bâtie en **architecture microservices**. Le système est composé de **5 microservices métier** orchestrés derrière une **API Gateway** unique, d'un **front-end React** et d'une **base PostgreSQL** (5 bases isolées). L'ensemble est conteneurisé via Docker Compose.
 
 ### Objectifs pédagogiques
 
@@ -40,16 +40,21 @@ Ce projet a pour but de démontrer la mise en œuvre d'une architecture distribu
 | Inscription / connexion / déconnexion | ✅ |
 | Refresh automatique du JWT (intercepteur Axios) | ✅ |
 | Profil utilisateur (lecture + mise à jour) | ✅ |
-| Recherche d'annonces avec filtres (ville, type, prix) | ✅ |
+| Recherche d'annonces avec filtres (ville, type, prix min/max, tri) | ✅ |
 | Consultation du détail d'une annonce | ✅ |
+| Carrousel photo sur la page détail | ✅ |
+| Vue carte interactive (toggle grille/carte, markers prix) | ✅ |
+| Mini-carte de localisation sur la page détail | ✅ |
 | Création / modification / suppression d'annonce | ✅ |
 | Règle de verrouillage (annonce non modifiable si candidature en cours) | ✅ |
 | Dépôt de candidature | ✅ |
 | Suivi des candidatures envoyées (locataire) | ✅ |
 | Réception et traitement des candidatures (propriétaire) | ✅ |
 | Notifications in-app (cloche, compteur, marquage lu) | ✅ |
+| Chat en temps réel entre locataire et propriétaire (WebSocket STOMP) | ✅ |
+| Animations de pages et micro-interactions (framer-motion) | ✅ |
 
-**Hors scope** : paiement, chat en direct, upload réel de fichiers (photos simulées par URL), carte géographique, notifications email/push.
+**Hors scope** : paiement, upload réel de fichiers (photos simulées par URL), notifications email/push.
 
 ### Glossaire
 
@@ -74,6 +79,7 @@ Chaque microservice correspond à un **bounded context** au sens DDD. Les respon
 | `catalog-service` | 8082 | Annonces immobilières | CRUD annonces, recherche filtrée, enrichissement propriétaire, flag locked | `Listing` |
 | `rental-service` | 8083 | Candidatures & cycle de location | Dépôt, acceptation/refus, règle de verrouillage, notifications | `Application` |
 | `notification-service` | 8084 | Notifications in-app | Création, lecture, compteur cloche, marquage lu | `Notification` |
+| `chat-service` | 8085 | Messagerie temps réel | Conversations (listingId × tenantId), messages STOMP, historique persisté | `Conversation`, `Message` |
 | `gateway` | 8080 | Point d'entrée unique | Routage, validation JWT, propagation `X-User-*`, CORS, blocage `/internal/**` | — |
 
 ### Endpoints exposés (via gateway)

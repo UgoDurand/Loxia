@@ -4,6 +4,7 @@ import com.loxia.rental.domain.ApplicationStatus;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -16,6 +17,8 @@ public class ApplicationResponse {
     private Integer monthlyIncome;
     private String employmentStatus;
     private String message;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private ApplicationStatus status;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;

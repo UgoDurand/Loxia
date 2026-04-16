@@ -12,6 +12,21 @@ import { listingsApi } from '@/api/listingsApi'
 import Layout from '@/components/Layout'
 import Loader from '@/components/Loader'
 
+const AMENITY_OPTIONS = [
+  { key: 'furnished',      label: 'Meublé' },
+  { key: 'parking',        label: 'Parking' },
+  { key: 'elevator',       label: 'Ascenseur' },
+  { key: 'balcony',        label: 'Balcon' },
+  { key: 'terrace',        label: 'Terrasse' },
+  { key: 'cellar',         label: 'Cave' },
+  { key: 'pool',           label: 'Piscine' },
+  { key: 'internet',       label: 'Internet inclus' },
+  { key: 'airConditioning',label: 'Climatisation' },
+  { key: 'petsAllowed',    label: 'Animaux acceptés' },
+  { key: 'concierge',      label: 'Gardien' },
+  { key: 'digicode',       label: 'Digicode' },
+]
+
 const schema = z.object({
   title: z.string().min(1, "Titre requis").max(255),
   propertyType: z.string().min(1, "Type de bien requis"),
@@ -20,6 +35,9 @@ const schema = z.object({
   surface: z.string().min(1, "Surface requise"),
   rooms: z.string().min(1, "Chambres requis"),
   description: z.string().optional(),
+  floor: z.string().optional(),
+  energyClass: z.string().optional(),
+  deposit: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -32,6 +50,7 @@ function ListingFormPage() {
 
   const [photoUrls, setPhotoUrls] = useState<string[]>([])
   const [newPhotoUrl, setNewPhotoUrl] = useState('')
+  const [amenities, setAmenities] = useState<string[]>([])
 
   const { data: existing, isLoading: loadingExisting } = useQuery({
     queryKey: ['listing', id],
@@ -57,10 +76,20 @@ function ListingFormPage() {
         surface: String(existing.surface),
         rooms: String(existing.rooms),
         description: existing.description || '',
+        floor: existing.floor != null ? String(existing.floor) : '',
+        energyClass: existing.energyClass || '',
+        deposit: existing.deposit != null ? String(existing.deposit) : '',
       })
       setPhotoUrls(existing.photoUrls || [])
+      setAmenities(existing.amenities || [])
     }
   }, [existing, reset])
+
+  const toggleAmenity = (key: string) => {
+    setAmenities((prev) =>
+      prev.includes(key) ? prev.filter((a) => a !== key) : [...prev, key]
+    )
+  }
 
   const toPayload = (data: FormData) => ({
     title: data.title,
@@ -71,6 +100,10 @@ function ListingFormPage() {
     rooms: Number(data.rooms),
     description: data.description,
     photoUrls,
+    amenities,
+    floor: data.floor ? Number(data.floor) : null,
+    energyClass: data.energyClass || null,
+    deposit: data.deposit ? Number(data.deposit) : null,
   })
 
   const createMutation = useMutation({
@@ -284,6 +317,63 @@ function ListingFormPage() {
                 placeholder="Décrivez les atouts de votre logement..."
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
               />
+            </div>
+
+            {/* Floor + Energy class + Deposit */}
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Étage</label>
+                <input
+                  {...register('floor')}
+                  type="number"
+                  min={0}
+                  placeholder="0 = RDC"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Classe énergie (DPE)</label>
+                <select
+                  {...register('energyClass')}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+                >
+                  <option value="">Non renseignée</option>
+                  {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Dépôt de garantie (€)</label>
+                <input
+                  {...register('deposit')}
+                  type="number"
+                  min={0}
+                  placeholder="Ex: 1700"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400"
+                />
+              </div>
+            </div>
+
+            {/* Amenities */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Équipements & services</label>
+              <div className="flex flex-wrap gap-2">
+                {AMENITY_OPTIONS.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toggleAmenity(key)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                      amenities.includes(key)
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Photos (simulated URLs) */}

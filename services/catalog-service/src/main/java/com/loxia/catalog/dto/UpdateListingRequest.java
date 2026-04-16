@@ -35,4 +35,14 @@ public class UpdateListingRequest {
     private Integer rooms;
 
     private List<String> photoUrls;
+
+    private List<String> amenities;
+
+    private Integer floor;
+
+    @Size(max = 1)
+    private String energyClass;
+
+    @PositiveOrZero(message = "Deposit must be zero or positive")
+    private Integer deposit;
 }

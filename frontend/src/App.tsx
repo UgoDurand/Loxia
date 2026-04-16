@@ -1,7 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
+import { AnimatePresence } from 'framer-motion'
 import { useAuthStore } from '@/store/authStore'
+import ChatWidget from '@/components/ChatWidget'
 import HomePage from '@/pages/HomePage'
 import LoginPage from '@/pages/LoginPage'
 import RegisterPage from '@/pages/RegisterPage'
@@ -33,79 +35,90 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
+function AppRoutes() {
+  const location = useLocation()
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <GuestRoute>
+              <RegisterPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/listings/new"
+          element={
+            <ProtectedRoute>
+              <ListingFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/listings/:id" element={<ListingDetailPage />} />
+        <Route
+          path="/listings/:id/edit"
+          element={
+            <ProtectedRoute>
+              <ListingFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-listings"
+          element={
+            <ProtectedRoute>
+              <MyListingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/listings/:id/apply"
+          element={
+            <ProtectedRoute>
+              <ApplyPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Legacy paths → redirect into the profile dashboard */}
+        <Route path="/my-applications" element={<Navigate to="/profile/applications" replace />} />
+        <Route path="/received-applications" element={<Navigate to="/profile/received" replace />} />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfileLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<SettingsPage />} />
+          <Route path="applications" element={<MyApplicationsPage />} />
+          <Route path="received" element={<ReceivedApplicationsPage />} />
+        </Route>
+      </Routes>
+    </AnimatePresence>
+  )
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route
-            path="/login"
-            element={
-              <GuestRoute>
-                <LoginPage />
-              </GuestRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <GuestRoute>
-                <RegisterPage />
-              </GuestRoute>
-            }
-          />
-          <Route
-            path="/listings/new"
-            element={
-              <ProtectedRoute>
-                <ListingFormPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/listings/:id" element={<ListingDetailPage />} />
-          <Route
-            path="/listings/:id/edit"
-            element={
-              <ProtectedRoute>
-                <ListingFormPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-listings"
-            element={
-              <ProtectedRoute>
-                <MyListingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/listings/:id/apply"
-            element={
-              <ProtectedRoute>
-                <ApplyPage />
-              </ProtectedRoute>
-            }
-          />
-          {/* Legacy paths → redirect into the profile dashboard */}
-          <Route path="/my-applications" element={<Navigate to="/profile/applications" replace />} />
-          <Route path="/received-applications" element={<Navigate to="/profile/received" replace />} />
-
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfileLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<SettingsPage />} />
-            <Route path="applications" element={<MyApplicationsPage />} />
-            <Route path="received" element={<ReceivedApplicationsPage />} />
-          </Route>
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
+      <ChatWidget />
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   )

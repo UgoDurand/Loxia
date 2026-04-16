@@ -22,7 +22,7 @@ EOSQL
 
 echo "Loxia: creating per-service databases..."
 
-for db in "$AUTH_DB_NAME" "$CATALOG_DB_NAME" "$RENTAL_DB_NAME" "$NOTIFICATION_DB_NAME"; do
+for db in "$AUTH_DB_NAME" "$CATALOG_DB_NAME" "$RENTAL_DB_NAME" "$NOTIFICATION_DB_NAME" "$CHAT_DB_NAME"; do
   create_database "$db"
 done
 

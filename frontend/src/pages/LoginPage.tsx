@@ -6,6 +6,7 @@ import { LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { authApi } from '@/api/authApi'
 import { useAuthStore } from '@/store/authStore'
+import PageTransition from '@/components/PageTransition'
 
 const schema = z.object({
   email: z.string().email('Email invalide'),
@@ -44,6 +45,7 @@ function LoginPage() {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm p-8">
         <div className="flex flex-col items-center mb-6">
@@ -104,6 +106,7 @@ function LoginPage() {
         </p>
       </div>
     </div>
+    </PageTransition>
   )
 }
 

@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { UserPlus } from 'lucide-react'
+import PageTransition from '@/components/PageTransition'
 import { Button } from '@/components/ui/button'
 import { authApi } from '@/api/authApi'
 import { useAuthStore } from '@/store/authStore'
@@ -45,6 +46,7 @@ function RegisterPage() {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm p-8">
         <div className="flex flex-col items-center mb-6">
@@ -118,6 +120,7 @@ function RegisterPage() {
         </p>
       </div>
     </div>
+    </PageTransition>
   )
 }
 
