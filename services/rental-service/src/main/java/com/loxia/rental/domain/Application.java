@@ -3,6 +3,7 @@ package com.loxia.rental.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -33,6 +34,12 @@ public class Application {
 
     @Column(columnDefinition = "TEXT")
     private String message;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

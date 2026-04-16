@@ -16,6 +16,9 @@
 #   - 3000 : frontend (UI)
 #   - 8090 : pgAdmin  (dev only)
 #
+# Five databases are hosted in loxia-db:
+#   auth_db, catalog_db, rental_db, notification_db, chat_db
+#
 # The API gateway and the frontend will be added in the next steps
 # and will plug into the same network.
 #
@@ -37,6 +40,7 @@ services:
       CATALOG_DB_NAME: ${CATALOG_DB_NAME:-catalog_db}
       RENTAL_DB_NAME: ${RENTAL_DB_NAME:-rental_db}
       NOTIFICATION_DB_NAME: ${NOTIFICATION_DB_NAME:-notification_db}
+      CHAT_DB_NAME: ${CHAT_DB_NAME:-chat_db}
     volumes:
       - loxia-db-data:/var/lib/postgresql/data
       - ./scripts/init-multi-db.sh:/docker-entrypoint-initdb.d/init-multi-db.sh:ro
@@ -166,6 +170,32 @@ services:
       retries: 10
       start_period: 60s
 
+  chat-service:
+    build:
+      context: ./services
+      dockerfile: chat-service/Dockerfile
+    container_name: loxia-chat-service
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      CHAT_DB_NAME: ${CHAT_DB_NAME:-chat_db}
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me-in-prod}
+    networks:
+      - loxia-net
+    expose:
+      - "8085"
+    depends_on:
+      loxia-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8085/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
   gateway:
     build:
       # The gateway has its own standalone pom.xml — build context is
@@ -191,6 +221,8 @@ services:
       rental-service:
         condition: service_healthy
       notification-service:
+        condition: service_healthy
+      chat-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]

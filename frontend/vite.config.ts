@@ -9,6 +9,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  define: {
+    // SockJS (used by @stomp/stompjs) references the Node.js `global` object
+    // which does not exist in browsers. Map it to the standard `globalThis`.
+    global: 'globalThis',
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -19,6 +24,11 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
+      },
+      '/ws-chat': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        ws: true,
       },
     },
   },

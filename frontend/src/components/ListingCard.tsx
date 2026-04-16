@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { MapPin, Maximize2, BedDouble } from 'lucide-react'
+import { motion, type Variants } from 'framer-motion'
 import type { ListingSummary } from '@/api/listingsApi'
 
 interface ListingCardProps {
@@ -10,15 +11,27 @@ interface ListingCardProps {
 const PLACEHOLDER_IMG =
   'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=250&fit=crop'
 
+export const listingCardVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+}
+
 function ListingCard({ listing, showActions }: ListingCardProps) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <motion.div
+      variants={listingCardVariants}
+      whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.10)' }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+      className="bg-white rounded-xl border border-gray-200 overflow-hidden cursor-pointer"
+    >
       <Link to={`/listings/${listing.id}`}>
-        <div className="relative h-44 bg-gray-200">
-          <img
+        <div className="relative h-44 bg-gray-200 overflow-hidden">
+          <motion.img
             src={listing.photoUrl || PLACEHOLDER_IMG}
             alt={listing.title}
             className="w-full h-full object-cover"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
             onError={(e) => {
               ;(e.target as HTMLImageElement).src = PLACEHOLDER_IMG
             }}
@@ -26,6 +39,21 @@ function ListingCard({ listing, showActions }: ListingCardProps) {
           <span className="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-medium px-2 py-0.5 rounded">
             {listing.propertyType}
           </span>
+          {listing.furnished && (
+            <span className="absolute bottom-2 left-2 bg-emerald-600/90 text-white text-xs font-medium px-2 py-0.5 rounded">
+              Meublé
+            </span>
+          )}
+          {listing.energyClass && (
+            <span className="absolute bottom-2 right-2 bg-white/90 text-gray-700 text-xs font-bold px-2 py-0.5 rounded border border-gray-200">
+              DPE {listing.energyClass}
+            </span>
+          )}
+          {listing.locked && (
+            <span className="absolute top-2 right-2 bg-amber-500/90 text-white text-xs font-medium px-2 py-0.5 rounded">
+              Verrouillé
+            </span>
+          )}
         </div>
       </Link>
 
@@ -53,7 +81,10 @@ function ListingCard({ listing, showActions }: ListingCardProps) {
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-indigo-600 font-bold">{listing.price}€<span className="text-xs font-normal text-gray-400">/mois</span></span>
+          <span className="text-indigo-600 font-bold">
+            {listing.price.toLocaleString('fr-FR')}€
+            <span className="text-xs font-normal text-gray-400">/mois</span>
+          </span>
           {showActions && (
             <Link
               to={`/listings/${listing.id}`}
@@ -64,7 +95,7 @@ function ListingCard({ listing, showActions }: ListingCardProps) {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 

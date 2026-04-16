@@ -9,6 +9,8 @@ export interface Application {
   monthlyIncome: number
   employmentStatus: string
   message: string | null
+  startDate: string | null
+  endDate: string | null
   status: ApplicationStatus
   createdAt: string
   updatedAt: string
@@ -25,6 +27,8 @@ export interface CreateApplicationData {
   monthlyIncome: number
   employmentStatus: string
   message?: string
+  startDate?: string | null
+  endDate?: string | null
 }
 
 export const applicationsApi = {
