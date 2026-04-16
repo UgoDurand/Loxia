@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://loxia-db:5432/${CHAT_DB_NAME:chat_db}

@@ -11,6 +11,11 @@ export interface ListingSummary {
   photoUrl: string | null
   ownerId: string
   locked: boolean
+  furnished: boolean
+  deposit: number | null
+  energyClass: string | null
+  lat: number | null
+  lng: number | null
 }
 
 export interface ListingDetail {
@@ -23,9 +28,15 @@ export interface ListingDetail {
   surface: number
   rooms: number
   photoUrls: string[]
+  amenities: string[]
+  floor: number | null
+  energyClass: string | null
+  deposit: number | null
   ownerId: string
   ownerName: string | null
   locked: boolean
+  lat: number | null
+  lng: number | null
   createdAt: string
   updatedAt: string
 }
@@ -39,6 +50,10 @@ export interface CreateListingData {
   surface: number
   rooms: number
   photoUrls?: string[]
+  amenities?: string[]
+  floor?: number | null
+  energyClass?: string | null
+  deposit?: number | null
 }
 
 export interface UpdateListingData extends CreateListingData {}
@@ -48,6 +63,9 @@ export interface ListingSearchParams {
   propertyType?: string
   minPrice?: number
   maxPrice?: number
+  sortBy?: string
+  availableFrom?: string   // YYYY-MM-DD
+  availableTo?: string     // YYYY-MM-DD
 }
 
 export const listingsApi = {

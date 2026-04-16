@@ -21,6 +21,11 @@ public class ListingSummaryResponse {
     private String photoUrl;
     private UUID ownerId;
     private boolean locked;
+    private boolean furnished;
+    private Integer deposit;
+    private String energyClass;
+    private Double lat;
+    private Double lng;
 
     public static ListingSummaryResponse from(Listing listing) {
         return from(listing, false);
@@ -29,6 +34,9 @@ public class ListingSummaryResponse {
     public static ListingSummaryResponse from(Listing listing, boolean locked) {
         List<String> photos = listing.getPhotoUrls();
         String firstPhoto = (photos != null && !photos.isEmpty()) ? photos.get(0) : null;
+
+        List<String> amenities = listing.getAmenities();
+        boolean furnished = amenities != null && amenities.contains("furnished");
 
         return ListingSummaryResponse.builder()
                 .id(listing.getId())
@@ -41,6 +49,11 @@ public class ListingSummaryResponse {
                 .photoUrl(firstPhoto)
                 .ownerId(listing.getOwnerId())
                 .locked(locked)
+                .furnished(furnished)
+                .deposit(listing.getDeposit())
+                .energyClass(listing.getEnergyClass())
+                .lat(listing.getLatitude())
+                .lng(listing.getLongitude())
                 .build();
     }
 }

@@ -29,3 +29,13 @@ spring:
           uri: http://notification-service:8084
           predicates:
             - Path=/api/notifications/**
+
+        - id: chat-service-rest
+          uri: http://chat-service:8085
+          predicates:
+            - Path=/api/chat/**
+
+        - id: chat-service-ws
+          uri: http://chat-service:8085
+          predicates:
+            - Path=/ws-chat/**

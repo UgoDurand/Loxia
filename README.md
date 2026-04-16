@@ -38,17 +38,20 @@ L'application repose sur un concept de **compte unifié** : un même utilisateur
 
 **Périmètre fonctionnel** :
 
-- 🔍 Recherche d'annonces avec filtres (ville, type de bien, budget)
-- 🏠 Consultation détaillée des annonces (photos, surface, prix, description)
+- 🔍 Recherche d'annonces avec filtres avancés (ville, type de bien, fourchette de prix, tri)
+- 🗺️ Vue carte interactive — toggle grille/carte, markers avec prix, mini-carte sur chaque annonce
+- 🏠 Consultation détaillée des annonces (carrousel photo, surface, prix, description, localisation)
 - 📝 Dépôt de candidatures (revenus, situation pro, message)
 - 📊 Tableau de bord locataire — suivi des candidatures (En attente / Validé / Refusé)
 - ✏️ Création / modification / suppression d'annonces côté propriétaire
 - 🔒 Règle métier : une annonce avec une candidature en cours ne peut être ni modifiée ni supprimée
 - 📥 Tableau de bord propriétaire — réception et traitement des candidatures
 - 🔔 Notifications in-app temps quasi-réel
+- 💬 Chat temps réel entre locataire et propriétaire (WebSocket STOMP, fil par annonce)
+- ✨ Animations de pages, skeleton loaders, micro-interactions
 - 👤 Authentification, profil unifié, paramètres de compte
 
-**Hors scope** : pas de paiement, pas de chat en direct, pas d'upload réel de fichiers (photos simulées), pas de carte géographique.
+**Hors scope** : pas de paiement, pas d'upload réel de fichiers (photos simulées).
 
 ---
 
@@ -109,13 +112,13 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 
 ### Tableau récapitulatif
 
-| Service                | Port  | Bounded context                                 | Responsabilités principales                          |
-| ---------------------- | ----- | ----------------------------------------------- | ---------------------------------------------------- |
-| `gateway`              | 8080  | Point d'entrée unique                           | Routage, validation JWT, propagation `X-User-*`, CORS |
-| `auth-service`         | 8081  | Identité & authentification                     | Inscription, connexion, JWT, profil utilisateur       |
-| `catalog-service`      | 8082  | Annonces immobilières                           | CRUD listings, recherche, filtres                     |
-| `rental-service`       | 8083  | Candidatures & cycle de location                | Dépôt, acceptation/refus, règle de verrouillage       |
-| `notification-service` | 8084  | Notifications in-app                            | Création, lecture, compteur cloche                    |
+| Service                | Port | Bounded context                  | Responsabilités principales                           |
+| ---------------------- | ---- | -------------------------------- | ----------------------------------------------------- |
+| `gateway`              | 8080 | Point d'entrée unique            | Routage, validation JWT, propagation `X-User-*`, CORS |
+| `auth-service`         | 8081 | Identité & authentification      | Inscription, connexion, JWT, profil utilisateur       |
+| `catalog-service`      | 8082 | Annonces immobilières            | CRUD listings, recherche, filtres                     |
+| `rental-service`       | 8083 | Candidatures & cycle de location | Dépôt, acceptation/refus, règle de verrouillage       |
+| `notification-service` | 8084 | Notifications in-app             | Création, lecture, compteur cloche                    |
 
 > Documentation architecturale détaillée : [`docs/architecture.md`](docs/architecture.md)
 
@@ -125,59 +128,59 @@ Loxia est découpé en **4 microservices métier** orchestrés derrière une **A
 
 ### Back-end (par microservice)
 
-| Composant               | Choix                                              |
-| ----------------------- | -------------------------------------------------- |
-| Langage                 | **Java 21 LTS**                                    |
-| Framework               | **Spring Boot 3.3.x**                              |
-| Build                   | **Maven** (parent POM dans `services/pom.xml`)     |
-| Web                     | Spring Web (MVC)                                   |
-| Persistance             | Spring Data JPA + Hibernate                        |
-| Sécurité                | Spring Security 6 + jjwt (JWT HS256)               |
-| Validation              | Jakarta Bean Validation                            |
-| Client REST inter-svc   | Spring `RestClient` (Spring 6.1+)                  |
-| Migrations              | Flyway                                             |
-| Documentation API       | springdoc-openapi (Swagger UI)                     |
-| Tests                   | JUnit 5 + Mockito                                  |
+| Composant             | Choix                                          |
+| --------------------- | ---------------------------------------------- |
+| Langage               | **Java 21 LTS**                                |
+| Framework             | **Spring Boot 3.3.x**                          |
+| Build                 | **Maven** (parent POM dans `services/pom.xml`) |
+| Web                   | Spring Web (MVC)                               |
+| Persistance           | Spring Data JPA + Hibernate                    |
+| Sécurité              | Spring Security 6 + jjwt (JWT HS256)           |
+| Validation            | Jakarta Bean Validation                        |
+| Client REST inter-svc | Spring `RestClient` (Spring 6.1+)              |
+| Migrations            | Flyway                                         |
+| Documentation API     | springdoc-openapi (Swagger UI)                 |
+| Tests                 | JUnit 5 + Mockito                              |
 
 ### Front-end
 
-| Composant         | Choix                                                          |
-| ----------------- | -------------------------------------------------------------- |
-| Framework         | **React 18**                                                   |
-| Bundler           | **Vite**                                                       |
-| Langage           | **TypeScript**                                                 |
-| Styling           | **Tailwind CSS**                                               |
-| Composants UI     | **shadcn/ui**                                                  |
-| Routing           | React Router v6                                                |
-| State serveur     | TanStack Query v5                                              |
-| State client      | Zustand                                                        |
-| HTTP client       | Axios (avec intercepteur JWT + refresh auto)                   |
-| Forms             | React Hook Form + Zod                                          |
-| Icônes            | lucide-react                                                   |
+| Composant     | Choix                                        |
+| ------------- | -------------------------------------------- |
+| Framework     | **React 18**                                 |
+| Bundler       | **Vite**                                     |
+| Langage       | **TypeScript**                               |
+| Styling       | **Tailwind CSS**                             |
+| Composants UI | **shadcn/ui**                                |
+| Routing       | React Router v6                              |
+| State serveur | TanStack Query v5                            |
+| State client  | Zustand                                      |
+| HTTP client   | Axios (avec intercepteur JWT + refresh auto) |
+| Forms         | React Hook Form + Zod                        |
+| Icônes        | lucide-react                                 |
 
 ### Données & Infrastructure
 
-| Composant      | Choix                                                                  |
-| -------------- | ---------------------------------------------------------------------- |
-| SGBD           | **PostgreSQL 16** — 1 base par service, dans un conteneur unique       |
-| API Gateway    | **Spring Cloud Gateway**                                               |
-| Conteneurs     | **Docker** + **Docker Compose v2**                                     |
-| Reverse proxy  | **Nginx** (sert le build React statique)                               |
-| Outil d'admin  | **pgAdmin 4** (service Docker dev uniquement, port 8090)               |
+| Composant     | Choix                                                            |
+| ------------- | ---------------------------------------------------------------- |
+| SGBD          | **PostgreSQL 16** — 1 base par service, dans un conteneur unique |
+| API Gateway   | **Spring Cloud Gateway**                                         |
+| Conteneurs    | **Docker** + **Docker Compose v2**                               |
+| Reverse proxy | **Nginx** (sert le build React statique)                         |
+| Outil d'admin | **pgAdmin 4** (service Docker dev uniquement, port 8090)         |
 
 ---
 
 ## Prérequis
 
-| Outil          | Version minimale | Notes                                |
-| -------------- | ---------------- | ------------------------------------ |
-| Java JDK       | **21**           | LTS, Temurin recommandé              |
-| Maven          | **3.9+**         | Optionnel si on utilise `mvnw`        |
-| Node.js        | **20+**          | Pour le développement frontend       |
-| npm            | **10+**          | Fourni avec Node 20                  |
-| Docker         | **24+**          | Docker Desktop sous Windows/macOS    |
-| Docker Compose | **v2**           | Inclus dans Docker Desktop récent    |
-| Git            | **2.40+**        | Avec `gh` (GitHub CLI) pour les PR   |
+| Outil          | Version minimale | Notes                              |
+| -------------- | ---------------- | ---------------------------------- |
+| Java JDK       | **21**           | LTS, Temurin recommandé            |
+| Maven          | **3.9+**         | Optionnel si on utilise `mvnw`     |
+| Node.js        | **20+**          | Pour le développement frontend     |
+| npm            | **10+**          | Fourni avec Node 20                |
+| Docker         | **24+**          | Docker Desktop sous Windows/macOS  |
+| Docker Compose | **v2**           | Inclus dans Docker Desktop récent  |
+| Git            | **2.40+**        | Avec `gh` (GitHub CLI) pour les PR |
 
 ---
 
@@ -256,10 +259,10 @@ Un script de seed crée deux comptes prêts à l'emploi, trois annonces et une c
 
 **Comptes de démo** (mot de passe commun : `password123`) :
 
-| Email              | Nom            | Profil         | Contenu seedé                                                        |
-| ------------------ | -------------- | -------------- | -------------------------------------------------------------------- |
-| `alice@loxia.dev`  | Alice Martin   | Locataire      | 1 candidature `PENDING` sur l'annonce T2 Lyon de Bob                 |
-| `bob@loxia.dev`    | Bob Durand     | Propriétaire   | 3 annonces : T2 Lyon, studio Paris 11e, maison Marseille             |
+| Email             | Nom          | Profil       | Contenu seedé                                            |
+| ----------------- | ------------ | ------------ | -------------------------------------------------------- |
+| `alice@loxia.dev` | Alice Martin | Locataire    | 1 candidature `PENDING` sur l'annonce T2 Lyon de Bob     |
+| `bob@loxia.dev`   | Bob Durand   | Propriétaire | 3 annonces : T2 Lyon, studio Paris 11e, maison Marseille |
 
 > Connectez-vous avec **Bob** puis allez dans **Profil → Demandes reçues** pour accepter ou refuser la candidature d'Alice. Inversement, **Alice** retrouve sa demande dans **Profil → Mes candidatures**.
 >
@@ -297,12 +300,12 @@ Loxia/
 
 Loxia suit un **GitFlow simplifié** à deux branches longues + branches de feature éphémères :
 
-| Branche                       | Rôle                                                          | Règles                                                                                            |
-| ----------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `main`                        | **Production** — toujours stable, déployable                  | **Branche par défaut du dépôt.** Pas de commit direct. Reçoit uniquement des merges depuis `develop` aux jalons (release). |
-| `develop`                     | **Intégration** — état courant de l'équipe                    | Reçoit les merges des branches de feature après validation. Base des nouvelles branches `feat/*`.   |
-| `feat/<scope>-<short-desc>`   | Développement d'une fonctionnalité                            | Branchée depuis `develop`. Mergée dans `develop` après tests OK. Supprimée après merge.            |
-| `fix/<scope>-<short-desc>`    | Correction d'un bug                                           | Mêmes règles qu'une `feat/`.                                                                       |
+| Branche                     | Rôle                                         | Règles                                                                                                                     |
+| --------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `main`                      | **Production** — toujours stable, déployable | **Branche par défaut du dépôt.** Pas de commit direct. Reçoit uniquement des merges depuis `develop` aux jalons (release). |
+| `develop`                   | **Intégration** — état courant de l'équipe   | Reçoit les merges des branches de feature après validation. Base des nouvelles branches `feat/*`.                          |
+| `feat/<scope>-<short-desc>` | Développement d'une fonctionnalité           | Branchée depuis `develop`. Mergée dans `develop` après tests OK. Supprimée après merge.                                    |
+| `fix/<scope>-<short-desc>`  | Correction d'un bug                          | Mêmes règles qu'une `feat/`.                                                                                               |
 
 **Convention de nommage des branches** :
 

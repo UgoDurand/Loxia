@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { ArrowLeft, Home } from 'lucide-react'
+import { AlertCircle, ArrowLeft, CalendarX, Home } from 'lucide-react'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,8 @@ const EMPLOYMENT_OPTIONS = [
   { value: 'OTHER', label: 'Autre' },
 ]
 
+const today = new Date().toISOString().split('T')[0]
+
 const schema = z.object({
   monthlyIncome: z
     .string()
@@ -29,6 +31,8 @@ const schema = z.object({
     .regex(/^\d+$/, 'Doit être un nombre entier'),
   employmentStatus: z.string().min(1, "Statut d'emploi requis"),
   message: z.string().max(2000).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -62,17 +66,24 @@ function ApplyPage() {
         monthlyIncome: parseInt(data.monthlyIncome, 10),
         employmentStatus: data.employmentStatus,
         message: data.message || undefined,
+        startDate: data.startDate || null,
+        endDate: data.endDate || null,
       }),
     onSuccess: () => {
       toast.success('Candidature envoyée.')
       navigate('/profile/applications')
     },
-    onError: (err: unknown) => {
-      const msg = axios.isAxiosError(err)
-        ? (err.response?.data?.message ?? err.response?.data?.error ?? 'Erreur inconnue')
-        : 'Erreur inconnue'
-      setError('root', { message: msg })
-      toast.error(msg)
+    onError: (err: unknown, variables: FormData) => {
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        const hasDateConflict = !!(variables.startDate && variables.endDate)
+        setError('root', { message: hasDateConflict ? 'date_conflict' : 'already_applied' })
+      } else {
+        const msg = axios.isAxiosError(err)
+          ? (err.response?.data?.message ?? err.response?.data?.error ?? 'Erreur inconnue')
+          : 'Erreur inconnue'
+        setError('root', { message: msg })
+        toast.error(msg)
+      }
     },
   })
 
@@ -172,8 +183,54 @@ function ApplyPage() {
               )}
             </div>
 
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Date d'entrée souhaitée</label>
+                <input
+                  type="date"
+                  min={today}
+                  {...register('startDate')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Date de fin souhaitée</label>
+                <input
+                  type="date"
+                  min={today}
+                  {...register('endDate')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+
             {errors.root && (
-              <p className="text-sm text-red-500">{errors.root.message}</p>
+              <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                {errors.root.message === 'date_conflict' ? (
+                  <CalendarX className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+                ) : (
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+                )}
+                <div>
+                  {errors.root.message === 'date_conflict' ? (
+                    <>
+                      <p className="text-sm font-semibold text-red-700">Dates non disponibles</p>
+                      <p className="text-sm text-red-600 mt-0.5">
+                        Ces dates chevauchent une réservation déjà acceptée. Choisissez une autre période ou laissez les dates vides.
+                      </p>
+                    </>
+                  ) : errors.root.message === 'already_applied' ? (
+                    <>
+                      <p className="text-sm font-semibold text-red-700">Candidature déjà envoyée</p>
+                      <p className="text-sm text-red-600 mt-0.5">
+                        Vous avez déjà une candidature active pour ce logement.
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-red-700">{errors.root.message}</p>
+                  )}
+                </div>
+              </div>
             )}
 
             <div className="flex gap-3 pt-2">

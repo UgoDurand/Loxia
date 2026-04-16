@@ -46,6 +46,21 @@ public class Listing {
     @Convert(converter = StringListConverter.class)
     private List<String> photoUrls;
 
+    @Column(columnDefinition = "TEXT")
+    @Convert(converter = StringListConverter.class)
+    private List<String> amenities;
+
+    private Integer floor;
+
+    @Column(name = "energy_class", length = 1)
+    private String energyClass;
+
+    private Integer deposit;
+
+    private Double latitude;
+
+    private Double longitude;
+
     @Column(name = "owner_id", nullable = false)
     private UUID ownerId;
 

@@ -128,3 +128,30 @@
     @apply font-sans;
     }
 }
+
+/* Leaflet overrides — prevent Tailwind border reset from breaking map tiles */
+.leaflet-container img,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container img,
+.leaflet-pane img {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.leaflet-popup-content {
+  margin: 10px 12px;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 0;
+  overflow: hidden;
+}
+
+.leaflet-popup-tip-container {
+  margin-top: -1px;
+}

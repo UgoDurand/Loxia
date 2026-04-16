@@ -4,9 +4,11 @@ import com.loxia.catalog.dto.*;
 import com.loxia.catalog.service.ListingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,8 +24,10 @@ public class ListingController {
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String propertyType,
             @RequestParam(required = false) Integer minPrice,
-            @RequestParam(required = false) Integer maxPrice) {
-        return listingService.search(city, propertyType, minPrice, maxPrice);
+            @RequestParam(required = false) Integer maxPrice,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate availableFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate availableTo) {
+        return listingService.search(city, propertyType, minPrice, maxPrice, availableFrom, availableTo);
     }
 
     @GetMapping("/mine")

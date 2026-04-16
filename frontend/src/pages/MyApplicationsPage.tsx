@@ -80,13 +80,19 @@ function MyApplicationCard({ application }: { application: Application }) {
         </span>
       </div>
 
-      <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+      <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 mb-3">
         <span className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
           Envoyée le {date}
         </span>
         <span>Revenu déclaré : {application.monthlyIncome}€</span>
         <span>Statut : {application.employmentStatus}</span>
+        {application.startDate && (
+          <span>
+            Entrée souhaitée : {new Date(application.startDate).toLocaleDateString('fr-FR')}
+            {application.endDate && ` → ${new Date(application.endDate).toLocaleDateString('fr-FR')}`}
+          </span>
+        )}
       </div>
 
       {application.message && (

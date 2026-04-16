@@ -3,6 +3,7 @@ package com.loxia.rental.dto;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -21,4 +22,9 @@ public class CreateApplicationRequest {
 
     @Size(max = 2000)
     private String message;
+
+    @FutureOrPresent(message = "Start date must be today or later")
+    private LocalDate startDate;
+
+    private LocalDate endDate;
 }

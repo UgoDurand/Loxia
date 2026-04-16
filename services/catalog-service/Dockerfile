@@ -27,6 +27,7 @@ COPY auth-service/pom.xml ./auth-service/pom.xml
 COPY catalog-service/pom.xml ./catalog-service/pom.xml
 COPY rental-service/pom.xml ./rental-service/pom.xml
 COPY notification-service/pom.xml ./notification-service/pom.xml
+COPY chat-service/pom.xml ./chat-service/pom.xml
 
 # Warm up the local Maven repository with catalog-service's dependencies.
 RUN mvn -q -pl catalog-service -am dependency:go-offline

@@ -37,6 +37,9 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     // GET /api/listings/** is public (browse without account)
     private static final String PUBLIC_LISTINGS_PATH = "/api/listings/**";
 
+    // WebSocket connections to chat-service bypass gateway JWT (chat-service validates itself via STOMP)
+    private static final String WEBSOCKET_CHAT_PATH = "/ws-chat/**";
+
     // Internal paths are blocked entirely — not forwarded even with a valid JWT
     private static final String INTERNAL_PATH = "/internal/**";
 
@@ -62,6 +65,11 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             log.warn("Blocked attempt to reach internal path: {}", path);
             exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
             return exchange.getResponse().setComplete();
+        }
+
+        // Allow WebSocket upgrade requests to chat-service (chat-service validates JWT via STOMP)
+        if (pathMatcher.match(WEBSOCKET_CHAT_PATH, path)) {
+            return chain.filter(exchange);
         }
 
         // Allow public paths

@@ -47,12 +47,26 @@ public class ApplicationService {
                     HttpStatus.CONFLICT, "You already have an active application on this listing");
         }
 
+        // If the applicant provides rental dates, check that no accepted application already
+        // occupies an overlapping period on this listing.
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            boolean dateConflict = applicationRepository.existsOverlappingAcceptedApplication(
+                    request.getListingId(), request.getStartDate(), request.getEndDate());
+            if (dateConflict) {
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "This listing is already booked for the requested period");
+            }
+        }
+
         Application application = Application.builder()
                 .listingId(request.getListingId())
                 .applicantId(applicantId)
                 .monthlyIncome(request.getMonthlyIncome())
                 .employmentStatus(request.getEmploymentStatus())
                 .message(request.getMessage())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
                 .status(ApplicationStatus.PENDING)
                 .build();
         application = applicationRepository.save(application);
@@ -175,6 +189,8 @@ public class ApplicationService {
                 .monthlyIncome(app.getMonthlyIncome())
                 .employmentStatus(app.getEmploymentStatus())
                 .message(app.getMessage())
+                .startDate(app.getStartDate())
+                .endDate(app.getEndDate())
                 .status(app.getStatus())
                 .createdAt(app.getCreatedAt())
                 .updatedAt(app.getUpdatedAt());
